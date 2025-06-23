@@ -14,10 +14,10 @@ try {
 	try {
 		const api = require('@/convex/_generated/api')
 		convexApi = api.api
-	} catch (apiError) {
+	} catch (_) {
 		console.log('Convex API not generated yet - using fallback mode')
 	}
-} catch (convexError) {
+} catch (_) {
 	console.log('Convex not available - using fallback mode')
 }
 

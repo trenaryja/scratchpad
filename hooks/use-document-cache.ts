@@ -1,6 +1,6 @@
 'use client'
-import { useLocalStorage } from './use-local-storage'
 import { useCallback } from 'react'
+import { useLocalStorage } from './use-local-storage'
 
 interface CachedDocument {
 	id: string
@@ -18,14 +18,10 @@ export function useDocumentCache() {
 				const now = Date.now()
 
 				if (existing) {
-					// Only update if title actually changed
-					if (existing.title !== title) {
+					if (existing.title !== title)
 						return prev.map((doc) => (doc.id === id ? { ...doc, title, lastModified: now } : doc))
-					}
-					return prev // No change needed
+					return prev
 				}
-
-				// Add new document
 				return [...prev, { id, title, lastModified: now }]
 			})
 		},
@@ -39,31 +35,9 @@ export function useDocumentCache() {
 		[setDocuments],
 	)
 
-	const exportCache = useCallback(() => {
-		const dataStr = JSON.stringify(documents, null, 2)
-		const dataBlob = new Blob([dataStr], { type: 'application/json' })
-		const url = URL.createObjectURL(dataBlob)
-		const link = document.createElement('a')
-		link.href = url
-		link.download = 'markdown-scratchpad-cache.json'
-		link.click()
-		URL.revokeObjectURL(url)
-	}, [documents])
-
-	const importCache = useCallback(
-		(data: CachedDocument[]) => {
-			if (Array.isArray(data)) {
-				setDocuments(data)
-			}
-		},
-		[setDocuments],
-	)
-
 	return {
 		documents,
 		addDocument,
 		hideDocument,
-		exportCache,
-		importCache,
 	}
 }

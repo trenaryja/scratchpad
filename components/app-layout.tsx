@@ -1,12 +1,9 @@
 'use client'
 
-import type React from 'react'
-
-import { useState } from 'react'
-import { Sidebar } from '@/components/sidebar'
 import { Header } from '@/components/header'
-import { CommandPalette } from '@/components/command-palette'
-import { useKeyboardShortcuts } from '@/hooks/use-keyboard-shortcuts'
+import { Sidebar } from '@/components/sidebar'
+import type React from 'react'
+import { useState } from 'react'
 
 interface AppLayoutProps {
 	children: React.ReactNode
@@ -14,11 +11,6 @@ interface AppLayoutProps {
 
 export function AppLayout({ children }: AppLayoutProps) {
 	const [sidebarOpen, setSidebarOpen] = useState(false)
-	const [commandPaletteOpen, setCommandPaletteOpen] = useState(false)
-
-	useKeyboardShortcuts({
-		onToggleCommandPalette: () => setCommandPaletteOpen(true),
-	})
 
 	return (
 		<div className='drawer lg:drawer-open'>
@@ -39,8 +31,6 @@ export function AppLayout({ children }: AppLayoutProps) {
 				<label htmlFor='drawer-toggle' className='drawer-overlay'></label>
 				<Sidebar />
 			</div>
-
-			<CommandPalette open={commandPaletteOpen} onClose={() => setCommandPaletteOpen(false)} />
 		</div>
 	)
 }

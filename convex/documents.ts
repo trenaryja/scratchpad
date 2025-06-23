@@ -1,5 +1,6 @@
-import { mutation, query } from './_generated/server'
 import { v } from 'convex/values'
+import { DataModel } from './_generated/dataModel'
+import { mutation, query } from './_generated/server'
 
 export const getDocument = query({
 	args: { nanoid: v.string() },
@@ -62,7 +63,7 @@ export const updateDocument = mutation({
 			throw new Error('Document not found')
 		}
 
-		const updates: any = {
+		const updates: Partial<DataModel['documents']['document']> = {
 			modifiedAt: Date.now(),
 		}
 

@@ -18,7 +18,7 @@ interface EditorViewProps {
 export function EditorView({ title, content, onTitleChange, onContentChange, isLocal }: EditorViewProps) {
 	const [editorContent, setEditorContent] = useState(content)
 	const [editorTitle, setEditorTitle] = useState(title)
-	const { theme } = useTheme()
+	const { resolvedTheme } = useTheme()
 	const contentRef = useRef(content)
 	const titleRef = useRef(title)
 	const isInitialized = useRef(false)
@@ -62,7 +62,7 @@ export function EditorView({ title, content, onTitleChange, onContentChange, isL
 		onTitleChange(newTitle)
 	}
 
-	const monacoTheme = theme === 'dark' ? 'vs-dark' : 'light'
+	const monacoTheme = resolvedTheme === 'dark' ? 'vs-dark' : 'light'
 
 	return (
 		<div className='h-full flex flex-col'>

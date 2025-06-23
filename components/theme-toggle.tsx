@@ -1,8 +1,8 @@
 'use client'
 
 import { useTheme } from 'next-themes'
-import { Sun, Moon, Palette } from 'lucide-react'
 import { useEffect, useState } from 'react'
+import { LuMoon, LuPalette, LuSun } from 'react-icons/lu'
 
 export function ThemeToggle() {
 	const { theme, setTheme, themes } = useTheme()
@@ -20,11 +20,11 @@ export function ThemeToggle() {
 		<div className='dropdown dropdown-end'>
 			<label tabIndex={0} className='btn btn-ghost btn-sm'>
 				{theme === 'dark' ? (
-					<Moon className='h-5 w-5' />
+					<LuMoon className='h-5 w-5' />
 				) : theme === 'light' ? (
-					<Sun className='h-5 w-5' />
+					<LuSun className='h-5 w-5' />
 				) : (
-					<Palette className='h-5 w-5' />
+					<LuPalette className='h-5 w-5' />
 				)}
 			</label>
 			<ul tabIndex={0} className='dropdown-content menu p-2 shadow bg-base-100 rounded-box w-52'>

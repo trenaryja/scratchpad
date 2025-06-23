@@ -1,10 +1,10 @@
 'use client'
 
-import { useState } from 'react'
-import { Share, Check } from 'lucide-react'
+import { convexApi, isConvexAvailable, safeUseMutation } from '@/lib/convex-client'
 import { nanoid } from 'nanoid'
 import { useRouter } from 'next/navigation'
-import { convexApi, safeUseMutation, isConvexAvailable } from '@/lib/convex-client'
+import { useState } from 'react'
+import { LuCheck, LuShare } from 'react-icons/lu'
 
 interface PublishButtonProps {
 	content: string
@@ -67,9 +67,9 @@ export function PublishButton({ content, title }: PublishButtonProps) {
 				{isPublishing ? (
 					<span className='loading loading-spinner loading-xs'></span>
 				) : copied ? (
-					<Check className='h-4 w-4' />
+					<LuCheck className='h-4 w-4' />
 				) : (
-					<Share className='h-4 w-4' />
+					<LuShare className='h-4 w-4' />
 				)}
 				{isPublishing ? 'Publishing...' : copied ? 'Copied!' : 'Publish'}
 			</button>

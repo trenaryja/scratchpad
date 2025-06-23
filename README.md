@@ -8,7 +8,6 @@ A collaborative markdown editor built with Next.js, similar to Excalidraw but fo
 - **Publishing**: Publish documents to unique URLs using 8-character nanoids
 - **Real-time Collaboration**: Live editing on published documents (coming soon with Convex)
 - **Theme Support**: Multiple DaisyUI themes with dark mode
-- **Search**: Quick search through visited documents (Ctrl+K)
 - **Export/Import**: Backup and restore your document cache
 
 ## Getting Started
@@ -52,5 +51,4 @@ For real-time collaboration, you'll need to set up Convex:
 
 ## Keyboard Shortcuts
 
-- \`Ctrl+K\` / \`Cmd+K\`: Open command palette
 - All Monaco editor shortcuts (Alt+Up/Down, multi-cursor, etc.)

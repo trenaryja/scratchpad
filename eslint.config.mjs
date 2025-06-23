@@ -1,3 +1,4 @@
+import convexPlugin from '@convex-dev/eslint-plugin'
 import pluginJs from '@eslint/js'
 import pluginReact from 'eslint-plugin-react'
 import { globalIgnores } from 'eslint/config'
@@ -9,6 +10,7 @@ export default [
 	globalIgnores(['node_modules', '.next']),
 	pluginJs.configs.recommended,
 	...tseslint.configs.recommended,
+	...convexPlugin.configs.recommended,
 	pluginReact.configs.flat.recommended,
 	{
 		files: ['**/*.{js,mjs,cjs,ts,jsx,tsx}'],
@@ -25,6 +27,12 @@ export default [
 					caughtErrorsIgnorePattern: '^_',
 				},
 			],
+		},
+	},
+	{
+		files: ['convex/_generated/**/*.{js,ts,jsx,tsx}'],
+		linterOptions: {
+			reportUnusedDisableDirectives: false,
 		},
 	},
 ]
