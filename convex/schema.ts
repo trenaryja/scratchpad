@@ -10,5 +10,6 @@ export default defineSchema({
 		modifiedAt: v.number(),
 	})
 		.index('by_nanoid', ['nanoid'])
-		.index('by_modified', ['modifiedAt']),
+		.index('by_modifiedAt', ['modifiedAt'])
+		.index('by_createdAt', ['createdAt']),
 })

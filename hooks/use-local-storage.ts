@@ -1,38 +1,52 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import * as React from 'react'
 
-export function useLocalStorage<T>(key: string, initialValue: T) {
-	const [storedValue, setStoredValue] = useState<T>(initialValue)
-	const [isLoaded, setIsLoaded] = useState(false)
+const dispatchStorageEvent = (key: string, newValue?: string | null) =>
+	window.dispatchEvent(new StorageEvent('storage', { key, newValue }))
 
-	useEffect(() => {
-		try {
-			const item = window.localStorage.getItem(key)
-			if (item) {
-				setStoredValue(JSON.parse(item))
-			}
-		} catch (error) {
-			console.error(`Error reading localStorage key "${key}":`, error)
-		} finally {
-			setIsLoaded(true)
-		}
-	}, [key])
+export const setLocalStorageItem = <T>(key: string, value: T) => {
+	const stringifiedValue = JSON.stringify(value)
+	window.localStorage.setItem(key, stringifiedValue)
+	dispatchStorageEvent(key, stringifiedValue)
+}
 
-	const setValue = useCallback(
-		(value: T | ((val: T) => T)) => {
-			try {
-				const valueToStore = value instanceof Function ? value(storedValue) : value
-				setStoredValue(valueToStore)
-				if (typeof window !== 'undefined') {
-					window.localStorage.setItem(key, JSON.stringify(valueToStore))
-				}
-			} catch (error) {
-				console.error(`Error setting localStorage key "${key}":`, error)
-			}
-		},
-		[key, storedValue],
+export const removeLocalStorageItem = (key: string) => {
+	window.localStorage.removeItem(key)
+	dispatchStorageEvent(key, null)
+}
+
+export const getLocalStorageItem = (key: string) => window.localStorage.getItem(key)
+
+const useLocalStorageSubscribe = (callback: (event: StorageEvent) => void) => {
+	window.addEventListener('storage', callback)
+	return () => window.removeEventListener('storage', callback)
+}
+
+export const useLocalStorage = <T>(key: string, initialValue: T) => {
+	const store = React.useSyncExternalStore(
+		useLocalStorageSubscribe,
+		() => getLocalStorageItem(key),
+		() => null,
 	)
 
-	return [storedValue, setValue, isLoaded] as const
+	const setState = React.useCallback(
+		(v: T | ((prev: T) => T)) => {
+			try {
+				const prev = store ? (JSON.parse(store) as T) : initialValue
+				const nextState = typeof v === 'function' ? (v as (prev: T) => T)(prev) : v
+				if (nextState === undefined || nextState === null) removeLocalStorageItem(key)
+				else setLocalStorageItem(key, nextState)
+			} catch (e) {
+				console.warn(e)
+			}
+		},
+		[initialValue, key, store],
+	)
+
+	React.useEffect(() => {
+		if (getLocalStorageItem(key) === null && typeof initialValue !== 'undefined') setLocalStorageItem(key, initialValue)
+	}, [initialValue, key])
+
+	return [store ? (JSON.parse(store) as T) : initialValue, setState] as const
 }
