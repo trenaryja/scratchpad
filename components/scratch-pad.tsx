@@ -147,7 +147,11 @@ export function ScratchPad({ id = '' }: { id?: string }) {
 	)
 }
 
+// TODO: custom domain/hosting
+// TODO: live tab title?
+// TODO: add footer/info/help
+// TODO: update localHistory on page/document load
+// TODO: infisical management
 // TODO: read-only mode
-// TODO: properly debounce with good local dx
-// TODO: fix tab title
-// TODO: sort out local vs prod convex updating
+// TODO: debounce convex updates with good local dx
+// TODO: highlightjs or rehype then maybe shiki then maybe custom/daisy?
