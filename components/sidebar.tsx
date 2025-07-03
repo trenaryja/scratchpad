@@ -24,7 +24,7 @@ export const Sidebar = () => {
 	)
 
 	return (
-		<div className='drawer z-50'>
+		<div className='drawer absolute z-50'>
 			<input id='sidebar' type='checkbox' className='drawer-toggle' />
 			<div className='drawer-side'>
 				<label htmlFor='sidebar' className='drawer-overlay'></label>

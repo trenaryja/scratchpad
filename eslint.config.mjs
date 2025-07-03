@@ -1,5 +1,6 @@
 import convexPlugin from '@convex-dev/eslint-plugin'
 import pluginJs from '@eslint/js'
+import pluginNext from '@next/eslint-plugin-next'
 import pluginReact from 'eslint-plugin-react'
 import { globalIgnores } from 'eslint/config'
 import globals from 'globals'
@@ -27,6 +28,16 @@ export default [
 					caughtErrorsIgnorePattern: '^_',
 				},
 			],
+		},
+	},
+	{
+		plugins: {
+			'@next/next': pluginNext,
+		},
+		rules: {
+			...pluginNext.configs.recommended.rules,
+			...pluginNext.configs['core-web-vitals'].rules,
+			'react/no-unescaped-entities': 'off',
 		},
 	},
 	{

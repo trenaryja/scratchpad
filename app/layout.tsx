@@ -1,9 +1,11 @@
 import { ConvexProvider } from '@/components/convex-provider'
+import { Footer } from '@/components/footer'
 import { Sidebar } from '@/components/sidebar'
 import type { Metadata } from 'next'
 import { ThemeProvider } from 'next-themes'
 import type React from 'react'
 
+import { cn } from '@/utils'
 import './globals.css'
 
 export const metadata: Metadata = {
@@ -12,12 +14,19 @@ export const metadata: Metadata = {
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
 	return (
-		<html lang='en' suppressHydrationWarning className='scroll-smooth'>
-			<body className='sans'>
+		<html lang='en' suppressHydrationWarning className='scroll-smooth sans'>
+			<body
+				className={cn(
+					'grid grid-rows-[auto_1fr_auto] max-h-screen min-h-screen',
+					'[&_.btn]:btn-sm lg:[&_.btn]:btn-md',
+					'[&_.input]:input-sm lg:[&_.input]:input-md',
+				)}
+			>
 				<ThemeProvider>
 					<ConvexProvider>
 						<Sidebar />
-						<main>{children}</main>
+						{children}
+						<Footer />
 					</ConvexProvider>
 				</ThemeProvider>
 			</body>
