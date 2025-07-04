@@ -126,7 +126,7 @@ export function ScratchPad({ id = '', readonly = false }: ScratchPadProps) {
 						{!id && (
 							<ConfirmButton
 								title='Publish'
-								className='btn hover:btn-primary'
+								className='btn btn-square hover:btn-primary'
 								confirmChildren={
 									<>
 										<LuCloudUpload />
@@ -141,7 +141,7 @@ export function ScratchPad({ id = '', readonly = false }: ScratchPadProps) {
 						)}
 						{id && (
 							<ConfirmButton
-								className='btn hover:btn-error'
+								className='btn btn-square hover:btn-error'
 								confirmChildren={
 									<>
 										<LuTrash2 />
@@ -155,7 +155,7 @@ export function ScratchPad({ id = '', readonly = false }: ScratchPadProps) {
 						)}
 						{id && (
 							<HoldableButton
-								className='btn hover:btn-primary'
+								className='btn btn-square hover:btn-primary'
 								onHold={() => handleCopyToClipboard(true)}
 								onClick={() => handleCopyToClipboard(false)}
 							>
@@ -165,21 +165,21 @@ export function ScratchPad({ id = '', readonly = false }: ScratchPadProps) {
 						<div className='flex join'>
 							<button
 								title='Edit'
-								className={cn('join-item btn hover:btn-primary', { 'btn-primary': view === 'edit' })}
+								className={cn('join-item btn btn-square hover:btn-primary', { 'btn-primary': view === 'edit' })}
 								onClick={() => setView('edit')}
 							>
 								<LuCode />
 							</button>
 							<button
 								title='Split'
-								className={cn('join-item btn hover:btn-primary', { 'btn-primary': view === 'split' })}
+								className={cn('join-item btn btn-square hover:btn-primary', { 'btn-primary': view === 'split' })}
 								onClick={() => setView('split')}
 							>
 								<LuSquareSplitHorizontal />
 							</button>
 							<button
 								title='View'
-								className={cn('join-item btn hover:btn-primary', { 'btn-primary': view === 'view' })}
+								className={cn('join-item btn btn-square hover:btn-primary', { 'btn-primary': view === 'view' })}
 								onClick={() => setView('view')}
 							>
 								<LuLetterText />
