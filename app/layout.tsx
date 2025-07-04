@@ -1,11 +1,11 @@
 import { ConvexProvider } from '@/components/convex-provider'
 import { Footer } from '@/components/footer'
 import { Sidebar } from '@/components/sidebar'
+import { Toaster } from '@/components/toast'
+import { cn } from '@/utils'
 import type { Metadata } from 'next'
 import { ThemeProvider } from 'next-themes'
 import type React from 'react'
-
-import { cn } from '@/utils'
 import './globals.css'
 
 export const metadata: Metadata = {
@@ -27,6 +27,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
 						<Sidebar />
 						{children}
 						<Footer />
+						<Toaster />
 					</ConvexProvider>
 				</ThemeProvider>
 			</body>

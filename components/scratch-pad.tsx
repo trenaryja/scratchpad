@@ -21,6 +21,7 @@ import {
 } from 'react-icons/lu'
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
+import { toast } from 'sonner'
 import { ConfirmButton } from './confirm-button'
 
 export function ScratchPad({ id = '' }: { id?: string }) {
@@ -117,7 +118,21 @@ export function ScratchPad({ id = '' }: { id?: string }) {
 					</ConfirmButton>
 				)}
 				{id && (
-					<button className='btn hover:btn-primary' onClick={() => navigator.clipboard.writeText(window.location.href)}>
+					<button
+						className='btn hover:btn-primary'
+						onClick={() => {
+							const url = window.location.href
+							navigator.clipboard.writeText(url)
+							toast.info(`Copied ${url}`, {
+								duration: Infinity,
+								icon: (
+									<div className='p-2 rounded-full aspect-square bg-base-content text-base-100'>
+										<LuClipboard />
+									</div>
+								),
+							})
+						}}
+					>
 						<LuClipboard />
 					</button>
 				)}
