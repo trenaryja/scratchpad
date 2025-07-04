@@ -8,6 +8,8 @@ import { ThemeProvider } from 'next-themes'
 import type React from 'react'
 import './globals.css'
 
+export type PageProps = { params: Promise<{ id: string }> }
+
 export const metadata: Metadata = {
 	title: 'Markdown Scratchpad',
 }

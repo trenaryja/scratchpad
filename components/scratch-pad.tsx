@@ -29,10 +29,15 @@ import { toast } from 'sonner'
 import { ConfirmButton } from './confirm-button'
 import { SwapCycle } from './swap-cycle'
 
-export function ScratchPad({ id = '' }: { id?: string }) {
+export type ScratchPadProps = {
+	id?: string
+	readonly?: boolean
+}
+
+export function ScratchPad({ id = '', readonly = false }: ScratchPadProps) {
 	const { resolvedTheme } = useTheme()
 	const router = useRouter()
-	const [view, setView] = useState<'view' | 'edit' | 'split'>('split')
+	const [view, setView] = useState<'view' | 'edit' | 'split'>(readonly ? 'view' : 'split')
 
 	const { upsert: upsertLocalHistory } = useLocalHistory()
 	const [localTitle, setLocalTitle] = useLocalStorage('title', '')
@@ -80,98 +85,104 @@ export function ScratchPad({ id = '' }: { id?: string }) {
 	return (
 		<>
 			<header className='flex flex-wrap justify-center items-center p-2 bg-base-200 gap-2'>
-				<div className='flex items-center gap-2 grow'>
-					<label tabIndex={0} htmlFor='sidebar' className='btn btn-ghost btn-square'>
-						<LuMenu />
-					</label>
-					<Link href='/'>
-						<SwapCycle duration={[5000, 750]} className='swap-flip btn btn-ghost btn-square'>
-							<LuHouse />
-							<LuSticker />
-							<LuHouse />
-							<LuWifiOff />
-						</SwapCycle>
-					</Link>
-					<input
-						value={title}
-						readOnly={view === 'view'}
-						onChange={(e) => handleTitleChange(e.target.value)}
-						className='input input-ghost grow min-w-xs text-lg font-bold '
-						placeholder='Document title...'
-					/>
-				</div>
-				{!id && (
-					<ConfirmButton
-						title='Publish'
-						className='btn hover:btn-primary'
-						confirmChildren={
-							<>
+				{readonly ? (
+					<h2 className='text-lg'>{title}</h2>
+				) : (
+					<>
+						<div className='flex items-center gap-2 grow'>
+							<label tabIndex={0} htmlFor='sidebar' className='btn btn-ghost btn-square'>
+								<LuMenu />
+							</label>
+							<Link href='/'>
+								<SwapCycle duration={[5000, 750]} className='swap-flip btn btn-ghost btn-square'>
+									<LuHouse />
+									<LuSticker />
+									<LuHouse />
+									<LuWifiOff />
+								</SwapCycle>
+							</Link>
+							<input
+								value={title}
+								readOnly={view === 'view'}
+								onChange={(e) => handleTitleChange(e.target.value)}
+								className='input input-ghost grow min-w-xs text-lg font-bold '
+								placeholder='Document title...'
+							/>
+						</div>
+						{!id && (
+							<ConfirmButton
+								title='Publish'
+								className='btn hover:btn-primary'
+								confirmChildren={
+									<>
+										<LuCloudUpload />
+										<span>Publish?</span>
+									</>
+								}
+								onConfirm={handlePublish}
+								disabled={!content.trim() || !title.trim()}
+							>
 								<LuCloudUpload />
-								<span>Publish?</span>
-							</>
-						}
-						onConfirm={handlePublish}
-						disabled={!content.trim() || !title.trim()}
-					>
-						<LuCloudUpload />
-					</ConfirmButton>
-				)}
-				{id && (
-					<ConfirmButton
-						className='btn hover:btn-error'
-						confirmChildren={
-							<>
+							</ConfirmButton>
+						)}
+						{id && (
+							<ConfirmButton
+								className='btn hover:btn-error'
+								confirmChildren={
+									<>
+										<LuTrash2 />
+										<span>Delete?</span>
+									</>
+								}
+								onConfirm={handleDelete}
+							>
 								<LuTrash2 />
-								<span>Delete?</span>
-							</>
-						}
-						onConfirm={handleDelete}
-					>
-						<LuTrash2 />
-					</ConfirmButton>
+							</ConfirmButton>
+						)}
+						{id && (
+							<button
+								className='btn hover:btn-primary'
+								onClick={() => {
+									const url = window.location.href
+									navigator.clipboard.writeText(url)
+									toast.info(`Copied ${url}`, {
+										duration: Infinity,
+										icon: (
+											<div className='p-2 rounded-full aspect-square bg-base-content text-base-100'>
+												<LuClipboard />
+											</div>
+										),
+									})
+								}}
+							>
+								<LuClipboard />
+							</button>
+						)}
+						<div className='flex join'>
+							<button
+								title='Edit'
+								className={cn('join-item btn hover:btn-primary', { 'btn-primary': view === 'edit' })}
+								onClick={() => setView('edit')}
+							>
+								<LuCode />
+							</button>
+							<button
+								title='Split'
+								className={cn('join-item btn hover:btn-primary', { 'btn-primary': view === 'split' })}
+								onClick={() => setView('split')}
+							>
+								<LuSquareSplitHorizontal />
+							</button>
+							<button
+								title='View'
+								className={cn('join-item btn hover:btn-primary', { 'btn-primary': view === 'view' })}
+								onClick={() => setView('view')}
+							>
+								<LuLetterText />
+							</button>
+						</div>
+					</>
 				)}
-				{id && (
-					<button
-						className='btn hover:btn-primary'
-						onClick={() => {
-							const url = window.location.href
-							navigator.clipboard.writeText(url)
-							toast.info(`Copied ${url}`, {
-								duration: Infinity,
-								icon: (
-									<div className='p-2 rounded-full aspect-square bg-base-content text-base-100'>
-										<LuClipboard />
-									</div>
-								),
-							})
-						}}
-					>
-						<LuClipboard />
-					</button>
-				)}
-				<div className='flex join'>
-					<button
-						title='Edit'
-						className={cn('join-item btn hover:btn-primary', { 'btn-primary': view === 'edit' })}
-						onClick={() => setView('edit')}
-					>
-						<LuCode />
-					</button>
-					<button
-						title='Split'
-						className={cn('join-item btn hover:btn-primary', { 'btn-primary': view === 'split' })}
-						onClick={() => setView('split')}
-					>
-						<LuSquareSplitHorizontal />
-					</button>
-					<button
-						title='View'
-						className={cn('join-item btn hover:btn-primary', { 'btn-primary': view === 'view' })}
-						onClick={() => setView('view')}
-					>
-						<LuLetterText />
-					</button>
-				</div>
 			</header>
 
 			<main
@@ -204,7 +215,6 @@ export function ScratchPad({ id = '' }: { id?: string }) {
 }
 
 // TODO: debounce convex updates with good local dx
-// TODO: read-only mode
 // TODO: infisical management
 // TODO: highlightjs or robsehype then maybe shiki then maybe custom/daisy?
 // TODO: update tabTitle for local document on load
