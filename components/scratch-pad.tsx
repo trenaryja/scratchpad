@@ -8,21 +8,26 @@ import { cn, themes } from '@/utils'
 import { Editor } from '@monaco-editor/react'
 import { nanoid } from 'nanoid'
 import { useTheme } from 'next-themes'
+import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useState } from 'react'
 import {
 	LuClipboard,
 	LuCloudUpload,
 	LuCode,
+	LuHouse,
 	LuLetterText,
 	LuMenu,
 	LuSquareSplitHorizontal,
+	LuSticker,
 	LuTrash2,
+	LuWifiOff,
 } from 'react-icons/lu'
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 import { toast } from 'sonner'
 import { ConfirmButton } from './confirm-button'
+import { SwapCycle } from './swap-cycle'
 
 export function ScratchPad({ id = '' }: { id?: string }) {
 	const { resolvedTheme } = useTheme()
@@ -79,6 +84,14 @@ export function ScratchPad({ id = '' }: { id?: string }) {
 					<label tabIndex={0} htmlFor='sidebar' className='btn btn-ghost btn-square'>
 						<LuMenu />
 					</label>
+					<Link href='/'>
+						<SwapCycle duration={[5000, 750]} className='swap-flip btn btn-ghost btn-square'>
+							<LuHouse />
+							<LuSticker />
+							<LuHouse />
+							<LuWifiOff />
+						</SwapCycle>
+					</Link>
 					<input
 						value={title}
 						readOnly={view === 'view'}

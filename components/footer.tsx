@@ -30,7 +30,7 @@ const InfoDialog = () => (
 				<h3>Offline by default</h3>
 			</div>
 			<p className='indent-4'>
-				When working at the root page of the app, you are working offline in a private scratchpad. The content of this
+				When working at the homepage of the app, you are working offline in a private scratchpad. The content of this
 				scratchpad won't be uploaded or shared until you choose to publish.
 			</p>
 
