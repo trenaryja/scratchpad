@@ -27,6 +27,7 @@ import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 import { toast } from 'sonner'
 import { ConfirmButton } from './confirm-button'
+import { HoldableButton } from './holdable-button'
 import { SwapCycle } from './swap-cycle'
 
 export type ScratchPadProps = {
@@ -82,6 +83,19 @@ export function ScratchPad({ id = '', readonly = false }: ScratchPadProps) {
 		})
 		router.push(`/${newId}`)
 	}
+
+	const handleCopyToClipboard = (wasHeld: boolean) => {
+		const url = wasHeld ? `${window.location.origin}/r/${id}` : window.location.href
+		navigator.clipboard.writeText(url)
+		toast.info(`Copied ${url}`, {
+			icon: (
+				<div className='p-2 rounded-full aspect-square bg-base-content text-base-100'>
+					<LuClipboard />
+				</div>
+			),
+		})
+	}
+
 	return (
 		<>
 			<header className='flex flex-wrap justify-center items-center p-2 bg-base-200 gap-2'>
@@ -140,23 +154,13 @@ export function ScratchPad({ id = '', readonly = false }: ScratchPadProps) {
 							</ConfirmButton>
 						)}
 						{id && (
-							<button
+							<HoldableButton
 								className='btn hover:btn-primary'
-								onClick={() => {
-									const url = window.location.href
-									navigator.clipboard.writeText(url)
-									toast.info(`Copied ${url}`, {
-										duration: Infinity,
-										icon: (
-											<div className='p-2 rounded-full aspect-square bg-base-content text-base-100'>
-												<LuClipboard />
-											</div>
-										),
-									})
-								}}
+								onHold={() => handleCopyToClipboard(true)}
+								onClick={() => handleCopyToClipboard(false)}
 							>
 								<LuClipboard />
-							</button>
+							</HoldableButton>
 						)}
 						<div className='flex join'>
 							<button
