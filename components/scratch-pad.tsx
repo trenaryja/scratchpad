@@ -4,23 +4,24 @@ import { useConvexDocument } from '@/hooks/use-convex-document'
 import { useLocalHistory } from '@/hooks/use-local-history'
 import { useLocalStorage } from '@/hooks/use-local-storage'
 import { useTabTitle } from '@/hooks/use-tab-title'
-import { cn, themes } from '@/utils'
+import { cn, makeUniquePairs, showModal, themes } from '@/utils'
 import { Editor } from '@monaco-editor/react'
 import { nanoid } from 'nanoid'
 import { useTheme } from 'next-themes'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { useState } from 'react'
 import {
 	LuClipboard,
 	LuCloudUpload,
 	LuCode,
+	LuColumns2,
 	LuHouse,
 	LuLetterText,
 	LuMenu,
-	LuSquareSplitHorizontal,
+	LuNotebookPen,
 	LuSticker,
 	LuTrash2,
+	LuX,
 } from 'react-icons/lu'
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
@@ -34,15 +35,20 @@ export type ScratchPadProps = {
 	readonly?: boolean
 }
 
+const VIEW_DIALOG_ID = 'view-modal'
+const viewOptions = ['code', 'tiptap', 'readonly'] as const
+const multiViewOptions = makeUniquePairs(viewOptions)
+type SingleViewOption = (typeof viewOptions)[number]
+type MultiViewOption = (typeof multiViewOptions)[number]
+type ViewOption = SingleViewOption | MultiViewOption
+
 export function ScratchPad({ id = '', readonly = false }: ScratchPadProps) {
 	const { resolvedTheme } = useTheme()
 	const router = useRouter()
-	const [view, setView] = useState<'view' | 'edit' | 'split'>(readonly ? 'view' : 'split')
-
-	const { upsert: upsertLocalHistory } = useLocalHistory()
+	const [view, setView] = useLocalStorage<ViewOption>('view', readonly ? 'readonly' : 'code|readonly')
 	const [localTitle, setLocalTitle] = useLocalStorage('title', '')
 	const [localContent, setLocalContent] = useLocalStorage('content', '')
-
+	const { upsert: upsertLocalHistory } = useLocalHistory()
 	const { document, updateDocument, createDocument, deleteDocument } = useConvexDocument(id)
 
 	const title = (id ? document?.title : localTitle) ?? ''
@@ -95,6 +101,40 @@ export function ScratchPad({ id = '', readonly = false }: ScratchPadProps) {
 		})
 	}
 
+	const CodeView = (
+		<Editor
+			key='code'
+			value={content}
+			onChange={handleContentChange}
+			defaultLanguage='markdown'
+			theme={themes.find((x) => x.name === resolvedTheme)?.mode === 'light' ? 'light' : 'vs-dark'}
+			options={{ minimap: { enabled: false } }}
+		/>
+	)
+
+	const TipTapView = (
+		<Editor
+			key='tiptap'
+			value={content}
+			onChange={handleContentChange}
+			defaultLanguage='markdown'
+			theme={themes.find((x) => x.name === resolvedTheme)?.mode === 'light' ? 'light' : 'vs-dark'}
+			options={{ minimap: { enabled: false } }}
+		/>
+	)
+
+	const ReadonlyView = (
+		<div key='readonly' tabIndex={-1} className='prose prose-sm max-w-none p-4 relative size-full overflow-auto'>
+			<ReactMarkdown remarkPlugins={[remarkGfm]}>{content}</ReactMarkdown>
+		</div>
+	)
+
+	const viewDict: Record<SingleViewOption, { render: React.ReactNode; icon: React.ReactNode }> = {
+		code: { icon: <LuCode />, render: CodeView },
+		readonly: { icon: <LuLetterText />, render: ReadonlyView },
+		tiptap: { icon: <LuNotebookPen />, render: TipTapView },
+	}
+
 	return (
 		<>
 			<header className='flex flex-wrap justify-center items-center p-2 bg-base-200 gap-2'>
@@ -114,7 +154,7 @@ export function ScratchPad({ id = '', readonly = false }: ScratchPadProps) {
 							</Link>
 							<input
 								value={title}
-								readOnly={view === 'view'}
+								readOnly={readonly}
 								onChange={(e) => handleTitleChange(e.target.value)}
 								className='input input-ghost grow min-w-xs text-lg font-bold '
 								placeholder='Document title...'
@@ -161,57 +201,75 @@ export function ScratchPad({ id = '', readonly = false }: ScratchPadProps) {
 								<LuClipboard />
 							</HoldableButton>
 						)}
-						<div className='flex join'>
-							<button
-								title='Edit'
-								className={cn('join-item btn btn-square hover:btn-primary', { 'btn-primary': view === 'edit' })}
-								onClick={() => setView('edit')}
-							>
-								<LuCode />
-							</button>
-							<button
-								title='Split'
-								className={cn('join-item btn btn-square hover:btn-primary', { 'btn-primary': view === 'split' })}
-								onClick={() => setView('split')}
-							>
-								<LuSquareSplitHorizontal />
-							</button>
-							<button
-								title='View'
-								className={cn('join-item btn btn-square hover:btn-primary', { 'btn-primary': view === 'view' })}
-								onClick={() => setView('view')}
-							>
-								<LuLetterText />
-							</button>
-						</div>
+						<button
+							title='Change view'
+							onClick={() => showModal(VIEW_DIALOG_ID)}
+							className={cn('btn btn-square hover:btn-primary')}
+						>
+							<LuColumns2 />
+						</button>
 					</>
 				)}
 			</header>
 
 			<main
 				className={cn('grid relative overflow-auto', {
-					'grid-rows-2 grid-cols-1 lg:grid-cols-2 lg:grid-rows-1': view === 'split',
+					'grid-rows-2 grid-cols-1 lg:grid-cols-2 lg:grid-rows-1': view.includes('|'),
 				})}
 			>
-				{view !== 'view' && (
-					<Editor
-						value={content}
-						onChange={handleContentChange}
-						defaultLanguage='markdown'
-						theme={themes.find((x) => x.name === resolvedTheme)?.mode === 'light' ? 'light' : 'vs-dark'}
-						options={{ minimap: { enabled: false } }}
-					/>
-				)}
-				{view !== 'edit' && (
-					<div tabIndex={-1} className='prose prose-sm max-w-none p-4 relative size-full overflow-auto'>
-						<ReactMarkdown remarkPlugins={[remarkGfm]}>{content}</ReactMarkdown>
-					</div>
-				)}
-				{view !== 'view' && (
+				{view.split('|').map((x) => viewDict[x as SingleViewOption].render)}
+
+				{!readonly && (
 					<div className='absolute text-xs right-2 top-2 h-fit lg:top-auto lg:bottom-2 backdrop-blur p-2 rounded-field text-current/50'>
 						{content.length ?? 0} / 10,000
 					</div>
 				)}
+
+				<dialog id={VIEW_DIALOG_ID} className='modal'>
+					<div className='modal-box [&_svg]:shrink-0 grid gap-y-4 place-items-center'>
+						<form method='dialog' className='absolute right-1 top-1'>
+							<button className='btn btn-ghost btn-square'>
+								<LuX />
+							</button>
+						</form>
+						<div className='grid gap-4'>
+							<h2 className='text-lg text-center'>Single View</h2>
+							<div className='flex gap-2 justify-between'>
+								{viewOptions.map((viewOption) => (
+									<button
+										key={viewOption}
+										title={viewOption}
+										className={cn('btn btn-xl btn-square', { 'btn-primary': view === viewOption })}
+										onClick={() => setView(viewOption)}
+									>
+										{viewDict[viewOption].icon}
+									</button>
+								))}
+							</div>
+							<div className='divider'>OR</div>
+							<h2 className='text-lg text-center'>Split View</h2>
+							<div className='grid gap-2 grid-cols-2'>
+								{multiViewOptions.map((viewOption) => {
+									const [leftView, rightView] = viewOption.split('|') as [SingleViewOption, SingleViewOption]
+									return (
+										<button
+											key={viewOption}
+											title={viewOption}
+											className={cn('btn btn-xl flex items-center px-0 w-[calc(var(--size)*2))]', {
+												'btn-primary': view === viewOption,
+											})}
+											onClick={() => setView(viewOption)}
+										>
+											{viewDict[leftView].icon}
+											<div className='divider divider-horizontal m-1' />
+											{viewDict[rightView].icon}
+										</button>
+									)
+								})}
+							</div>
+						</div>
+					</div>
+				</dialog>
 			</main>
 		</>
 	)

@@ -1,15 +1,13 @@
 'use client'
 
+import { showModal } from '@/utils'
 import Link from 'next/link'
 import { LuCloudUpload, LuInfo, LuLock, LuWifiOff, LuX } from 'react-icons/lu'
 
 const INFO_DIALOG_ID = 'dialog-info'
 
 const InfoDialogButton = () => (
-	<button
-		className='btn btn-ghost btn-square hover:btn-primary'
-		onClick={() => (document?.getElementById(INFO_DIALOG_ID) as HTMLDialogElement).showModal()}
-	>
+	<button className='btn btn-ghost btn-square hover:btn-primary' onClick={() => showModal(INFO_DIALOG_ID)}>
 		<LuInfo />
 	</button>
 )
