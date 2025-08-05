@@ -17,13 +17,7 @@ export const metadata: Metadata = {
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
 	return (
 		<html lang='en' suppressHydrationWarning className='scroll-smooth sans'>
-			<body
-				className={cn(
-					'grid grid-rows-[auto_1fr_auto] max-h-screen min-h-screen',
-					'[&_.btn]:btn-sm lg:[&_.btn]:btn-md',
-					'[&_.input]:input-sm lg:[&_.input]:input-md',
-				)}
-			>
+			<body className={cn('grid grid-rows-[auto_1fr_auto] max-h-screen min-h-screen')}>
 				<ThemeProvider>
 					<ConvexProvider>
 						<Sidebar />

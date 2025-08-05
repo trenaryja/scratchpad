@@ -21,7 +21,6 @@ import {
 	LuSquareSplitHorizontal,
 	LuSticker,
 	LuTrash2,
-	LuWifiOff,
 } from 'react-icons/lu'
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
@@ -111,8 +110,6 @@ export function ScratchPad({ id = '', readonly = false }: ScratchPadProps) {
 								<SwapCycle duration={[5000, 750]} className='swap-flip btn btn-ghost btn-square'>
 									<LuHouse />
 									<LuSticker />
-									<LuHouse />
-									<LuWifiOff />
 								</SwapCycle>
 							</Link>
 							<input
@@ -127,6 +124,7 @@ export function ScratchPad({ id = '', readonly = false }: ScratchPadProps) {
 							<ConfirmButton
 								title='Publish'
 								className='btn btn-square hover:btn-primary'
+								confirmClassName='btn hover:btn-primary'
 								confirmChildren={
 									<>
 										<LuCloudUpload />
@@ -142,6 +140,7 @@ export function ScratchPad({ id = '', readonly = false }: ScratchPadProps) {
 						{id && (
 							<ConfirmButton
 								className='btn btn-square hover:btn-error'
+								confirmClassName='btn hover:btn-error'
 								confirmChildren={
 									<>
 										<LuTrash2 />

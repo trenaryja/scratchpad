@@ -17,11 +17,6 @@ export function useLocalHistory() {
 			const { [id]: _, ...rest } = prev
 			return rest
 		})
-	// {
-	// 	console.log(id)
-	// 	const { [id]: _, ...rest } = history
-	// 	console.log(JSON.stringify(rest, null, 2))
-	// }
 
 	return { history, upsert, remove }
 }

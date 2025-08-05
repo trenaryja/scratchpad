@@ -70,7 +70,7 @@ export const Sidebar = () => {
 									{id !== entry.id && entry.id !== '' && (
 										<button
 											title='hide/remove from history'
-											className='absolute top-1 right-1 btn btn-ghost btn-sm btn-square backdrop-blur invisible group-hover:visible'
+											className='absolute top-1 right-1 btn btn-ghost btn-xs backdrop-blur invisible group-hover:visible'
 											onClick={(e) => {
 												e.preventDefault()
 												remove(entry.id)

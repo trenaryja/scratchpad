@@ -31,11 +31,7 @@ export const ConfirmButton = ({
 	}
 
 	return (
-		<button
-			className={cn(isAwaitingConfirmation ? [confirmClassName, className] : className)}
-			onClick={handleClick}
-			{...props}
-		>
+		<button className={cn(isAwaitingConfirmation ? confirmClassName : className)} onClick={handleClick} {...props}>
 			{isAwaitingConfirmation ? confirmChildren : children}
 		</button>
 	)
