@@ -79,6 +79,9 @@ export function useDocument(id?: string, username?: string) {
 		yTitle.observe(observer)
 		return () => yTitle.unobserve(observer)
 	}, [yTitle])
+	useEffect(() => {
+		if (isLocal) _setTitle(localTitle)
+	}, [isLocal, localTitle])
 
 	// Sync content
 	const setContent = useCallback(
@@ -98,6 +101,9 @@ export function useDocument(id?: string, username?: string) {
 		yContent.observe(observer)
 		return () => yContent.unobserve(observer)
 	}, [yContent])
+	useEffect(() => {
+		if (isLocal) _setContent(localContent)
+	}, [isLocal, localContent])
 
 	// Local history integration
 	const { upsert, remove } = useLocalHistory()

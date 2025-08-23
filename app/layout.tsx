@@ -3,16 +3,11 @@ import { Footer } from '@/components/footer'
 import { Sidebar } from '@/components/sidebar'
 import { Toaster } from '@/components/toast'
 import { cn } from '@/utils'
-import type { Metadata } from 'next'
 import { ThemeProvider } from 'next-themes'
 import type React from 'react'
 import './globals.css'
 
 export type PageProps = { params: Promise<{ id: string }> }
-
-export const metadata: Metadata = {
-	title: 'Markdown Scratchpad',
-}
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
 	return (

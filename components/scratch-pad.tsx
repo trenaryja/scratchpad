@@ -43,7 +43,7 @@ export const ScratchPad = ({ id, readonly = false }: ScratchPadProps) => {
 	const { resolvedTheme } = useTheme()
 	const [view, setView] = useLocalStorage<ViewOption>('view', readonly ? 'readonly' : 'code|readonly')
 	const { title, setTitle, content, setContent, publish, deleteDocument } = useDocument(id)
-	useTabTitle(title)
+	useTabTitle(title || 'Markdown Scratchpad')
 
 	const handleCopyToClipboard = (wasHeld: boolean) => {
 		const url = wasHeld ? `${window.location.origin}/r/${id}` : window.location.href
