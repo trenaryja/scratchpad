@@ -5,7 +5,7 @@ import { cn, themes } from '@/utils'
 import { useTheme } from 'next-themes'
 import { LuPalette } from 'react-icons/lu'
 
-export function ThemePicker() {
+export const ThemePicker = () => {
 	const hasMounted = useHasMounted()
 	const { resolvedTheme, setTheme } = useTheme()
 	const theme = themes.find((x) => x.name === resolvedTheme)

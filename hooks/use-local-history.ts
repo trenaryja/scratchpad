@@ -6,7 +6,7 @@ type Id = string
 type HistoryEntry = { title: string; lastOpened: number }
 type History = Record<Id, HistoryEntry>
 
-export function useLocalHistory() {
+export const useLocalHistory = () => {
 	const [history, setHistory] = useLocalStorage<History>('history', {})
 
 	const upsert = (id: Id, title: HistoryEntry['title']) =>

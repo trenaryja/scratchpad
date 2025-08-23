@@ -7,7 +7,7 @@ type HoldableButtonProps = ComponentProps<'button'> & {
 	holdDuration?: number
 }
 
-export function HoldableButton({ onClick, onHold, holdDuration = 1000, ...props }: HoldableButtonProps) {
+export const HoldableButton = ({ onClick, onHold, holdDuration = 1000, ...props }: HoldableButtonProps) => {
 	const timerRef = useRef<NodeJS.Timeout | null>(null)
 	const isHeldRef = useRef(false)
 	const isPressedRef = useRef(false)

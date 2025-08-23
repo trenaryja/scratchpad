@@ -11,7 +11,7 @@ import { useDebouncedCallback } from './use-debounced-callback'
 import { useLocalHistory } from './use-local-history'
 import { useLocalStorage } from './use-local-storage'
 
-export function useDocument(id?: string, username?: string) {
+export const useDocument = (id?: string, username?: string) => {
 	const isLocal = !id
 	const router = useRouter()
 

@@ -1,5 +1,5 @@
 // Encode Uint8Array → base64
-export function uint8ArrayToBase64(bytes: Uint8Array): string {
+export const uint8ArrayToBase64 = (bytes: Uint8Array) => {
 	// Convert to binary string
 	let binary = ''
 	const chunkSize = 0x8000 // process in chunks to avoid call stack limits
@@ -11,12 +11,10 @@ export function uint8ArrayToBase64(bytes: Uint8Array): string {
 }
 
 // Decode base64 → Uint8Array
-export function base64ToUint8Array(base64: string): Uint8Array {
+export const base64ToUint8Array = (base64: string) => {
 	const binary = atob(base64)
 	const len = binary.length
 	const bytes = new Uint8Array(len)
-	for (let i = 0; i < len; i++) {
-		bytes[i] = binary.charCodeAt(i)
-	}
+	for (let i = 0; i < len; i++) bytes[i] = binary.charCodeAt(i)
 	return bytes
 }
