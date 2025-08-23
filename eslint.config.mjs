@@ -1,24 +1,25 @@
 import convexPlugin from '@convex-dev/eslint-plugin'
-import pluginJs from '@eslint/js'
-import pluginNext from '@next/eslint-plugin-next'
-import pluginReact from 'eslint-plugin-react'
+import { FlatCompat } from '@eslint/eslintrc'
 import { globalIgnores } from 'eslint/config'
-import globals from 'globals'
-import tseslint from 'typescript-eslint'
+import { dirname } from 'path'
+import { fileURLToPath } from 'url'
+
+const __filename = fileURLToPath(import.meta.url)
+const __dirname = dirname(__filename)
+
+const compat = new FlatCompat({
+	baseDirectory: __dirname,
+})
 
 /** @type {import('eslint').Linter.Config[]} */
-export default [
-	globalIgnores(['node_modules', '.next']),
-	pluginJs.configs.recommended,
-	...tseslint.configs.recommended,
+const configs = [
+	globalIgnores(['node_modules', '.next', 'convex/_generated', 'next-env.d.ts']),
+	...compat.extends('next/core-web-vitals', 'next/typescript'),
 	...convexPlugin.configs.recommended,
-	pluginReact.configs.flat.recommended,
 	{
-		files: ['**/*.{js,mjs,cjs,ts,jsx,tsx}'],
-		languageOptions: { globals: globals.browser },
-		settings: { react: { version: 'detect' } },
 		rules: {
-			'react/react-in-jsx-scope': 'off',
+			'react/no-unescaped-entities': 'off',
+			// 'react/react-in-jsx-scope': 'off',
 			'@typescript-eslint/no-unused-vars': [
 				'error',
 				{
@@ -30,20 +31,6 @@ export default [
 			],
 		},
 	},
-	{
-		plugins: {
-			'@next/next': pluginNext,
-		},
-		rules: {
-			...pluginNext.configs.recommended.rules,
-			...pluginNext.configs['core-web-vitals'].rules,
-			'react/no-unescaped-entities': 'off',
-		},
-	},
-	{
-		files: ['convex/_generated/**/*.{js,ts,jsx,tsx}'],
-		linterOptions: {
-			reportUnusedDisableDirectives: false,
-		},
-	},
 ]
+
+export default configs

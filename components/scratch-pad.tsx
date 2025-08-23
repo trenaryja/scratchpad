@@ -1,15 +1,12 @@
 'use client'
 
-import { useConvexDocument } from '@/hooks/use-convex-document'
-import { useLocalHistory } from '@/hooks/use-local-history'
+import { useDocument } from '@/hooks/use-document'
 import { useLocalStorage } from '@/hooks/use-local-storage'
 import { useTabTitle } from '@/hooks/use-tab-title'
 import { cn, makeUniquePairs, showModal, themes } from '@/utils'
 import { Editor } from '@monaco-editor/react'
-import { nanoid } from 'nanoid'
 import { useTheme } from 'next-themes'
 import Link from 'next/link'
-import { useRouter } from 'next/navigation'
 import {
 	LuClipboard,
 	LuCloudUpload,
@@ -42,52 +39,11 @@ type SingleViewOption = (typeof viewOptions)[number]
 type MultiViewOption = (typeof multiViewOptions)[number]
 type ViewOption = SingleViewOption | MultiViewOption
 
-export function ScratchPad({ id = '', readonly = false }: ScratchPadProps) {
+export const ScratchPad = ({ id, readonly = false }: ScratchPadProps) => {
 	const { resolvedTheme } = useTheme()
-	const router = useRouter()
 	const [view, setView] = useLocalStorage<ViewOption>('view', readonly ? 'readonly' : 'code|readonly')
-	const [localTitle, setLocalTitle] = useLocalStorage('title', '')
-	const [localContent, setLocalContent] = useLocalStorage('content', '')
-	const { upsert: upsertLocalHistory } = useLocalHistory()
-	const { document, updateDocument, createDocument, deleteDocument } = useConvexDocument(id)
-
-	const title = (id ? document?.title : localTitle) ?? ''
-	const content = (id ? document?.content : localContent) ?? ''
-
+	const { title, setTitle, content, setContent, publish, deleteDocument } = useDocument(id)
 	useTabTitle(title)
-
-	const handleTitleChange = (newTitle = '') => {
-		if (!id) {
-			setLocalTitle(newTitle)
-			upsertLocalHistory(id, newTitle)
-			return
-		}
-		updateDocument({ title: newTitle })
-	}
-
-	const handleContentChange = (newContent = '') => {
-		if (!id) {
-			setLocalContent(newContent)
-			return
-		}
-		updateDocument({ content: newContent })
-	}
-
-	const handleDelete = () => {
-		deleteDocument()
-		router.push('/')
-	}
-
-	const handlePublish = async () => {
-		const newId = nanoid(8)
-		upsertLocalHistory(newId, title)
-		await createDocument({
-			nanoid: newId,
-			title: title,
-			content: content,
-		})
-		router.push(`/${newId}`)
-	}
 
 	const handleCopyToClipboard = (wasHeld: boolean) => {
 		const url = wasHeld ? `${window.location.origin}/r/${id}` : window.location.href
@@ -105,7 +61,7 @@ export function ScratchPad({ id = '', readonly = false }: ScratchPadProps) {
 		<Editor
 			key='code'
 			value={content}
-			onChange={handleContentChange}
+			onChange={(val) => setContent(val ?? '')}
 			defaultLanguage='markdown'
 			theme={themes.find((x) => x.name === resolvedTheme)?.mode === 'light' ? 'light' : 'vs-dark'}
 			options={{ minimap: { enabled: false } }}
@@ -116,7 +72,7 @@ export function ScratchPad({ id = '', readonly = false }: ScratchPadProps) {
 		<Editor
 			key='tiptap'
 			value={content}
-			onChange={handleContentChange}
+			onChange={(val) => setContent(val ?? '')}
 			defaultLanguage='markdown'
 			theme={themes.find((x) => x.name === resolvedTheme)?.mode === 'light' ? 'light' : 'vs-dark'}
 			options={{ minimap: { enabled: false } }}
@@ -155,9 +111,8 @@ export function ScratchPad({ id = '', readonly = false }: ScratchPadProps) {
 							<input
 								value={title}
 								readOnly={readonly}
-								onChange={(e) => handleTitleChange(e.target.value)}
-								className='input input-ghost grow min-w-xs text-lg font-bold '
-								placeholder='Document title...'
+								onChange={(e) => setTitle(e.target.value)}
+								className='input input-ghost grow min-w-xs text-lg font-bold'
 							/>
 						</div>
 						{!id && (
@@ -171,7 +126,7 @@ export function ScratchPad({ id = '', readonly = false }: ScratchPadProps) {
 										<span>Publish?</span>
 									</>
 								}
-								onConfirm={handlePublish}
+								onConfirm={publish}
 								disabled={!content.trim() || !title.trim()}
 							>
 								<LuCloudUpload />
@@ -187,7 +142,7 @@ export function ScratchPad({ id = '', readonly = false }: ScratchPadProps) {
 										<span>Delete?</span>
 									</>
 								}
-								onConfirm={handleDelete}
+								onConfirm={deleteDocument}
 							>
 								<LuTrash2 />
 							</ConfirmButton>
@@ -239,7 +194,9 @@ export function ScratchPad({ id = '', readonly = false }: ScratchPadProps) {
 									<button
 										key={viewOption}
 										title={viewOption}
-										className={cn('btn btn-xl btn-square', { 'btn-primary': view === viewOption })}
+										className={cn('btn btn-xl btn-square', {
+											'btn-primary': view === viewOption,
+										})}
 										onClick={() => setView(viewOption)}
 									>
 										{viewDict[viewOption].icon}
@@ -275,7 +232,6 @@ export function ScratchPad({ id = '', readonly = false }: ScratchPadProps) {
 	)
 }
 
-// TODO: debounce convex updates with good local dx
 // TODO: infisical management
 // TODO: highlightjs or robsehype then maybe shiki then maybe custom/daisy?
 // TODO: update tabTitle for local document on load

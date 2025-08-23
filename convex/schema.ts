@@ -1,15 +1,18 @@
+// convex/schema.ts
 import { defineSchema, defineTable } from 'convex/server'
 import { v } from 'convex/values'
 
 export default defineSchema({
 	documents: defineTable({
-		nanoid: v.string(), // The 8-character nanoid
-		title: v.string(),
-		content: v.string(),
-		createdAt: v.number(),
-		modifiedAt: v.number(),
-	})
-		.index('by_nanoid', ['nanoid'])
-		.index('by_modifiedAt', ['modifiedAt'])
-		.index('by_createdAt', ['createdAt']),
+		id: v.string(),
+		snapshotBase64: v.optional(v.string()),
+		lastCompacted: v.optional(v.number()),
+	}).index('by_nanoid', ['id']),
+
+	updates: defineTable({
+		docId: v.string(),
+		updateBase64: v.string(), // Yjs update
+		user: v.optional(v.string()),
+		ts: v.number(),
+	}).index('by_docId', ['docId']),
 })

@@ -35,7 +35,7 @@ export const SwapCycle = ({ children, className, duration = 2000, animationDurat
 		return () => {
 			if (timeoutRef.current) clearTimeout(timeoutRef.current)
 		}
-	}, [showOn, durationIndex, animationDuration, childArray.length])
+	}, [showOn, durationIndex, animationDuration, childArray.length, duration])
 
 	useEffect(() => {
 		if (checkboxRef.current) checkboxRef.current.checked = showOn
