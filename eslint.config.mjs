@@ -1,36 +1,24 @@
-import convexPlugin from '@convex-dev/eslint-plugin'
 import { FlatCompat } from '@eslint/eslintrc'
-import { globalIgnores } from 'eslint/config'
-import { dirname } from 'path'
-import { fileURLToPath } from 'url'
-
-const __filename = fileURLToPath(import.meta.url)
-const __dirname = dirname(__filename)
 
 const compat = new FlatCompat({
-	baseDirectory: __dirname,
+	baseDirectory: import.meta.url,
 })
 
 /** @type {import('eslint').Linter.Config[]} */
-const configs = [
-	globalIgnores(['node_modules', '.next', 'convex/_generated', 'next-env.d.ts']),
+const eslintConfig = [
+	{ ignores: ['.next/**', 'next-env.d.ts', 'convex/_generated'] },
 	...compat.extends('next/core-web-vitals', 'next/typescript'),
-	...convexPlugin.configs.recommended,
 	{
 		rules: {
 			'react/no-unescaped-entities': 'off',
-			// 'react/react-in-jsx-scope': 'off',
+			'@next/next/no-img-element': 'off',
+			'@typescript-eslint/no-namespace': 'off',
 			'@typescript-eslint/no-unused-vars': [
 				'error',
-				{
-					varsIgnorePattern: '^_',
-					argsIgnorePattern: '^_',
-					destructuredArrayIgnorePattern: '^_',
-					caughtErrorsIgnorePattern: '^_',
-				},
+				{ argsIgnorePattern: '^_', varsIgnorePattern: '^_', caughtErrorsIgnorePattern: '^_' },
 			],
 		},
 	},
 ]
 
-export default configs
+export default eslintConfig
