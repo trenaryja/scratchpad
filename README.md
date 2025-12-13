@@ -27,6 +27,12 @@ A collaborative markdown editor built with Next.js with no auth required!
 - [ ] Theme Picker
 - [ ] Known Links documentation
 - [ ] Syntax highlighting
+  - [ ] highlightjs or robsehype, then maybe shiki, then maybe custom/daisy
+  - [ ] backtick function like prisma.$queryRaw that syntax highlights a string of markdown
+    - [ ] returns rendered html
+    - [ ] used in a custom markdown component
+    - [ ] allow middleware?
+    - [ ] nested code fences?
 - [ ] TipTap integration
 - [ ] embeddable links?
 - [ ] ?raw param to get raw content
@@ -34,7 +40,9 @@ A collaborative markdown editor built with Next.js with no auth required!
 - [ ] mermaid diagram syntax highlighting
 - [ ] md.trenary.dev/mermaid
   - endpoint for turning markdown text input into mermaid html.
-  - sanitize input and churn it back
+  - sanitize input and return html as a response
+- [ ] infisical management
+- [ ] update tabTitle for local document on load
 
 ### Bugs:
 

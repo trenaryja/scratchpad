@@ -1,6 +1,8 @@
 @import 'tailwindcss';
 @import 'tw-animate-css';
 @plugin "@tailwindcss/typography";
+@import '@trenaryja/ui/css';
+@source '../node_modules/@trenaryja/ui';
 
 @plugin "daisyui" {
 	themes: all;
@@ -8,23 +10,4 @@
 
 @utility input {
 	@apply focus-within:outline-none focus:outline-none placeholder:text-base-content/25 bg-transparent [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none;
-}
-
-@utility full-bleed-container {
-	@apply grid content-start grid-cols-[1fr_min(80ch,100%)_1fr] [&>*]:col-2;
-}
-
-@utility full-bleed {
-	@apply col-span-full w-full;
-}
-
-@utility debug {
-	@apply !border !border-red-500;
-}
-
-@utility no-scrollbar {
-	scrollbar-width: none;
-	&::-webkit-scrollbar {
-		display: none;
-	}
 }

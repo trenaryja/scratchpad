@@ -231,7 +231,3 @@ export const ScratchPad = ({ id, readonly = false }: ScratchPadProps) => {
 		</>
 	)
 }
-
-// TODO: infisical management
-// TODO: highlightjs or robsehype then maybe shiki then maybe custom/daisy?
-// TODO: update tabTitle for local document on load
