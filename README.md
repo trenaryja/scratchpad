@@ -19,6 +19,8 @@ A collaborative markdown editor built with Next.js with no auth required!
 
 ## TODO:
 
+### Features:
+
 - [ ] Copy paste button in code blocks
   - [ ] use-debounce-cycle for copying as code-block
 - [ ] Injectable style sheets?
@@ -33,3 +35,7 @@ A collaborative markdown editor built with Next.js with no auth required!
 - [ ] md.trenary.dev/mermaid
   - endpoint for turning markdown text input into mermaid html.
   - sanitize input and churn it back
+
+### Bugs:
+
+- [ ] Observerving users are getting constantly rerendered flashing content
