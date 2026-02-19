@@ -212,7 +212,7 @@ export const ScratchPad = ({ id, readonly = false }: ScratchPadProps) => {
 										<button
 											key={viewOption}
 											title={viewOption}
-											className={cn('btn btn-xl flex items-center px-0 w-[calc(var(--size)*2))]', {
+											className={cn('btn btn-xl flex items-center px-0 w-[calc(var(--size)*2)]', {
 												'btn-primary': view === viewOption,
 											})}
 											onClick={() => setView(viewOption)}

@@ -1,9 +1,14 @@
 'use client'
 
-import { EditorContent, useEditor } from '@tiptap/react'
+import { EditorContent, EditorOptions, useEditor } from '@tiptap/react'
 import StarterKit from '@tiptap/starter-kit'
+import { ComponentProps } from 'react'
 
-const Tiptap = () => {
+export type TiptapProps = {
+	options?: EditorOptions
+} & Omit<ComponentProps<typeof EditorContent>, 'editor'>
+
+export const Tiptap = ({ options, ...props }: TiptapProps) => {
 	const editor = useEditor({
 		extensions: [StarterKit],
 		immediatelyRender: false,
@@ -14,7 +19,5 @@ const Tiptap = () => {
 		},
 	})
 
-	return <EditorContent editor={editor} />
+	return <EditorContent {...props} editor={editor} />
 }
-
-export default Tiptap
