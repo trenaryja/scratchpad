@@ -34,6 +34,7 @@ A collaborative markdown editor built with Next.js with no auth required!
     - [ ] allow middleware?
     - [ ] nested code fences?
 - [ ] TipTap integration
+  - [ ] add classnames to tiptap
 - [ ] embeddable links?
 - [ ] ?raw param to get raw content
 - [ ] mermaid diagram render support
@@ -47,3 +48,5 @@ A collaborative markdown editor built with Next.js with no auth required!
 ### Bugs:
 
 - [ ] Observerving users are getting constantly rerendered flashing content
+- [ ] Fix width of view mode
+- [ ] Read only mode shows editor

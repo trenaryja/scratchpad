@@ -1,4 +1,4 @@
-import Tiptap from '@/components/tiptap'
+import { Tiptap } from '@/components/tiptap'
 
 export default async function DemoPage() {
 	return (

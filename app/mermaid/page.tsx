@@ -1,7 +1,7 @@
-export default async function DemoPage() {
+export default async function MermaidPage() {
 	return (
 		<>
-			<h1>Mermaid Editor</h1>
+			<h1>Mermaid Renderer</h1>
 			<span>coming soon</span>
 		</>
 	)

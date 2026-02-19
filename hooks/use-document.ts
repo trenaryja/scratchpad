@@ -11,7 +11,10 @@ import { useDebouncedCallback } from './use-debounced-callback'
 import { useLocalHistory } from './use-local-history'
 import { useLocalStorage } from './use-local-storage'
 
-export const useDocument = (id?: string, username?: string) => {
+const REMOTE_ORIGIN = 'remote'
+const SYNC_DEBOUNCE_MS = 500
+
+export const useDocument = (id?: string) => {
 	const isLocal = !id
 	const router = useRouter()
 
@@ -21,7 +24,7 @@ export const useDocument = (id?: string, username?: string) => {
 
 	// Convex mutations/queries
 	const docData = useQuery(api.documents.getDocument, id ? { id } : 'skip')
-	const addUpdate = useMutation(api.documents.addDocUpdate)
+	const updateSnapshotMutation = useMutation(api.documents.updateSnapshot)
 	const deleteDocMutation = useMutation(api.documents.deleteDocument)
 	const createDocMutation = useMutation(api.documents.createDocument)
 
@@ -32,26 +35,32 @@ export const useDocument = (id?: string, username?: string) => {
 	const ydocRef = useRef<Y.Doc>(new Y.Doc())
 	const ydoc = ydocRef.current
 
-	// Apply snapshot + updates
+	// Apply remote snapshot — tagged so local handler skips it
 	useEffect(() => {
-		if (!docData) return
-		if (docData.snapshotBase64) Y.applyUpdate(ydoc, base64ToUint8Array(docData.snapshotBase64))
-		for (const u of docData.updates) Y.applyUpdate(ydoc, base64ToUint8Array(u.updateBase64))
-	}, [docData, ydoc, isLocal])
+		if (!docData?.snapshotBase64) return
+		Y.applyUpdate(ydoc, base64ToUint8Array(docData.snapshotBase64), REMOTE_ORIGIN)
+	}, [docData, ydoc])
 
-	// Send local updates to Convex (remote only)
+	// Debounced sync: flush full Yjs state to server
+	const pendingRef = useRef(false)
+	const flushToServer = useDebouncedCallback(() => {
+		if (!pendingRef.current || isLocal || !id) return
+		pendingRef.current = false
+		const update = Y.encodeStateAsUpdate(ydoc)
+		updateSnapshotMutation({ id, updateBase64: uint8ArrayToBase64(update) })
+	}, SYNC_DEBOUNCE_MS)
+
+	// Listen for local-only updates, mark dirty + schedule flush
 	useEffect(() => {
 		if (isLocal) return
-		const handler = (update: Uint8Array) => {
-			addUpdate({
-				id,
-				updateBase64: uint8ArrayToBase64(update),
-				user: username,
-			})
+		const handler = (_update: Uint8Array, origin: unknown) => {
+			if (origin === REMOTE_ORIGIN) return
+			pendingRef.current = true
+			flushToServer()
 		}
 		ydoc.on('update', handler)
 		return () => ydoc.off('update', handler)
-	}, [ydoc, addUpdate, id, username, isLocal])
+	}, [ydoc, isLocal, flushToServer])
 
 	// Y.Texts
 	const yTitle = useMemo(() => ydoc.getText('title'), [ydoc])
@@ -67,11 +76,13 @@ export const useDocument = (id?: string, username?: string) => {
 			_setTitle(newVal)
 			if (isLocal) setLocalTitle(newVal)
 			else {
-				yTitle!.delete(0, yTitle!.length)
-				yTitle!.insert(0, newVal)
+				ydoc.transact(() => {
+					yTitle.delete(0, yTitle.length)
+					yTitle.insert(0, newVal)
+				})
 			}
 		},
-		[isLocal, setLocalTitle, yTitle],
+		[isLocal, setLocalTitle, yTitle, ydoc],
 	)
 	useEffect(() => {
 		if (!yTitle) return
@@ -89,11 +100,13 @@ export const useDocument = (id?: string, username?: string) => {
 			_setContent(newVal)
 			if (isLocal) setLocalContent(newVal)
 			else {
-				yContent!.delete(0, yContent!.length)
-				yContent!.insert(0, newVal)
+				ydoc.transact(() => {
+					yContent.delete(0, yContent.length)
+					yContent.insert(0, newVal)
+				})
 			}
 		},
-		[isLocal, setLocalContent, yContent],
+		[isLocal, setLocalContent, yContent, ydoc],
 	)
 	useEffect(() => {
 		if (!yContent) return
@@ -133,7 +146,6 @@ export const useDocument = (id?: string, username?: string) => {
 	}
 
 	return {
-		// High-level API
 		isLocal,
 		isLoading: !isLocal && docData === undefined,
 		title,
@@ -142,8 +154,6 @@ export const useDocument = (id?: string, username?: string) => {
 		setContent,
 		publish,
 		deleteDocument,
-
-		// Low-level CRDT API
 		ydoc,
 		yTitle,
 		yContent,
