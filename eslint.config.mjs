@@ -1,24 +1,14 @@
-import { FlatCompat } from '@eslint/eslintrc'
+import { defineConfig } from '@fullstacksjs/eslint-config'
 
-const compat = new FlatCompat({
-	baseDirectory: import.meta.url,
-})
+export default defineConfig({
+	ignores: ['convex/_generated/**'],
+	files: ['**/*.ts', '**/*.tsx'],
+	rules: {
+		'@eslint-react/no-missing-context-display-name': 'off',
+		'perfectionist/sort-imports': 'off', // handled by vscode organize imports
 
-/** @type {import('eslint').Linter.Config[]} */
-const eslintConfig = [
-	{ ignores: ['.next/**', 'next-env.d.ts', 'convex/_generated'] },
-	...compat.extends('next/core-web-vitals', 'next/typescript'),
-	{
-		rules: {
-			'react/no-unescaped-entities': 'off',
-			'@next/next/no-img-element': 'off',
-			'@typescript-eslint/no-namespace': 'off',
-			'@typescript-eslint/no-unused-vars': [
-				'error',
-				{ argsIgnorePattern: '^_', varsIgnorePattern: '^_', caughtErrorsIgnorePattern: '^_' },
-			],
-		},
+		'@typescript-eslint/consistent-type-definitions': ['error', 'type'],
+		'@typescript-eslint/no-unnecessary-type-assertion': 'error',
+		'@typescript-eslint/prefer-nullish-coalescing': 'error',
 	},
-]
-
-export default eslintConfig
+})

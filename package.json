@@ -7,59 +7,42 @@
 		"build": "next build",
 		"start": "next start",
 		"lint": "eslint .",
-		"check": "tsc && pnpm lint && pnpm format -c && pnpm build",
-		"format": "prettier -w . !\"pnpm-lock.yaml\"",
-		"get-latest": "pnpm up -L -i -r",
-		"reinstall": "rm -rf node_modules && rm pnpm-lock.yaml && pnpm install",
+		"check": "bun format -c && bun lint && tsc && bun run build",
+		"format": "prettier -w . !\"bun.lock\"",
+		"get-latest": "bun update --latest -i",
+		"reinstall": "rm -rf node_modules && rm bun.lock && bun install",
 		"env:pull": "infisical export > .env.local"
 	},
 	"dependencies": {
+		"@mantine/hooks": "^8.3.15",
 		"@monaco-editor/react": "^4.7.0",
-		"@tiptap/pm": "^3.13.0",
-		"@tiptap/react": "^3.13.0",
-		"@tiptap/starter-kit": "^3.13.0",
-		"@trenaryja/ui": "0.0.1-31",
-		"clsx": "^2.1.1",
+		"@trenaryja/ui": "0.0.1-35",
 		"convex": "^1.31.0",
 		"daisyui": "^5.5.13",
 		"date-fns": "4.1.0",
 		"nanoid": "^5.1.6",
-		"next": "16.0.10",
-		"next-themes": "^0.4.6",
+		"next": "16.1.6",
 		"react": "^19.2.3",
 		"react-dom": "^19.2.3",
 		"react-icons": "^5.5.0",
 		"react-markdown": "^10.1.0",
 		"remark-gfm": "^4.0.1",
 		"remeda": "^2.32.0",
-		"sonner": "^2.0.7",
-		"tailwind-merge": "^3.4.0",
 		"yjs": "^13.6.27"
 	},
 	"devDependencies": {
-		"@convex-dev/eslint-plugin": "1.1.1",
-		"@eslint/eslintrc": "^3.3.3",
+		"@fullstacksjs/eslint-config": "^14.0.1",
 		"@tailwindcss/postcss": "^4.1.18",
+		"@testing-library/dom": "^10.4.1",
 		"@types/node": "^25.0.1",
 		"@types/react": "^19.2.7",
 		"@types/react-dom": "^19.2.3",
 		"concurrently": "^9.2.1",
-		"eslint": "^9.39.2",
-		"eslint-config-next": "^16.0.10",
+		"eslint": "10",
 		"prettier": "^3.7.4",
 		"tailwindcss": "^4.1.18",
 		"tw-animate-css": "^1.4.0",
 		"typescript": "^5.9.3"
-	},
-	"pnpm": {
-		"onlyBuiltDependencies": [
-			"@clerk/shared",
-			"@tailwindcss/oxide",
-			"browser-tabs-lock",
-			"esbuild",
-			"sharp",
-			"unrs-resolver"
-		]
 	},
 	"postcss": {
 		"plugins": {
@@ -72,5 +55,10 @@
 		"printWidth": 120,
 		"jsxSingleQuote": true,
 		"useTabs": true
-	}
+	},
+	"trustedDependencies": [
+		"esbuild",
+		"sharp",
+		"unrs-resolver"
+	]
 }

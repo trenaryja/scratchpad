@@ -1,6 +1,7 @@
 'use client'
 
-import React, { ComponentProps, useRef } from 'react'
+import type { ComponentProps } from 'react'
+import React, { useEffect, useRef } from 'react'
 
 type HoldableButtonProps = ComponentProps<'button'> & {
 	onHold?: (event: React.MouseEvent<HTMLButtonElement> | React.TouchEvent<HTMLButtonElement>) => void
@@ -9,6 +10,13 @@ type HoldableButtonProps = ComponentProps<'button'> & {
 
 export const HoldableButton = ({ onClick, onHold, holdDuration = 1000, ...props }: HoldableButtonProps) => {
 	const timerRef = useRef<NodeJS.Timeout | null>(null)
+
+	useEffect(
+		() => () => {
+			if (timerRef.current) clearTimeout(timerRef.current)
+		},
+		[],
+	)
 	const isHeldRef = useRef(false)
 	const isPressedRef = useRef(false)
 	const hadTouchRef = useRef(false)
@@ -17,6 +25,7 @@ export const HoldableButton = ({ onClick, onHold, holdDuration = 1000, ...props 
 		if (event.type === 'touchstart') hadTouchRef.current = true
 		isHeldRef.current = false
 		isPressedRef.current = true
+
 		if (onHold) {
 			timerRef.current = setTimeout(() => {
 				isHeldRef.current = true
@@ -43,6 +52,7 @@ export const HoldableButton = ({ onClick, onHold, holdDuration = 1000, ...props 
 
 	return (
 		<button
+			type='button'
 			{...props}
 			onMouseDown={handlePressStart}
 			onMouseUp={handlePressEnd}
