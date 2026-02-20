@@ -1,95 +1,59 @@
 'use client'
 
 import { useDocument } from '@/hooks/use-document'
-import { useLocalStorage } from '@/hooks/use-local-storage'
-import { useTabTitle } from '@/hooks/use-tab-title'
-import { cn, makeUniquePairs, showModal, themes } from '@/utils'
+import { useDocumentTitle, useLocalStorage } from '@mantine/hooks'
 import { Editor } from '@monaco-editor/react'
-import { useTheme } from 'next-themes'
+import { cn, daisyThemeMap, isDaisyThemeName, toast, useTheme } from '@trenaryja/ui'
 import Link from 'next/link'
-import {
-	LuClipboard,
-	LuCloudUpload,
-	LuCode,
-	LuColumns2,
-	LuHouse,
-	LuLetterText,
-	LuMenu,
-	LuNotebookPen,
-	LuSticker,
-	LuTrash2,
-	LuX,
-} from 'react-icons/lu'
+import { LuClipboard, LuCloudUpload, LuHouse, LuMenu, LuSticker, LuTrash2 } from 'react-icons/lu'
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
-import { toast } from 'sonner'
 import { ConfirmButton } from './confirm-button'
 import { HoldableButton } from './holdable-button'
+import { toggleSidebar } from './sidebar'
 import { SwapCycle } from './swap-cycle'
+import type { SingleViewOption, ViewOption } from './view-dialog'
+import { ViewDialog } from './view-dialog'
 
 export type ScratchPadProps = {
 	id?: string
 	readonly?: boolean
 }
 
-const VIEW_DIALOG_ID = 'view-modal'
-const viewOptions = ['code', 'tiptap', 'readonly'] as const
-const multiViewOptions = makeUniquePairs(viewOptions)
-type SingleViewOption = (typeof viewOptions)[number]
-type MultiViewOption = (typeof multiViewOptions)[number]
-type ViewOption = SingleViewOption | MultiViewOption
+const SWAP_DURATION = [5000, 750] as const
+const SWAP_ITEMS = [<LuHouse key='house' />, <LuSticker key='sticker' />]
+
+const getEditorTheme = (theme: string | undefined) =>
+	isDaisyThemeName(theme) && daisyThemeMap[theme].colorScheme === 'light' ? 'light' : 'vs-dark'
+
+const CLIPBOARD_ICON = (
+	<div className='p-2 rounded-full aspect-square bg-base-content text-base-100'>
+		<LuClipboard />
+	</div>
+)
+
+const copyToClipboard = (id: string | undefined, wasHeld: boolean) => {
+	const url = wasHeld ? `${window.location.origin}/r/${id}` : window.location.href
+	navigator.clipboard.writeText(url)
+	toast.info(`Copied ${url}`, { icon: CLIPBOARD_ICON })
+}
 
 export const ScratchPad = ({ id, readonly = false }: ScratchPadProps) => {
 	const { resolvedTheme } = useTheme()
-	const [view, setView] = useLocalStorage<ViewOption>('view', readonly ? 'readonly' : 'code|readonly')
-	const { title, setTitle, content, setContent, publish, deleteDocument } = useDocument(id)
-	useTabTitle(title || 'Markdown Scratchpad')
+	const [view, setView] = useLocalStorage<ViewOption>({
+		key: 'view',
+		defaultValue: readonly ? 'readonly' : 'code|readonly',
+	})
+	const { isLoading, title, setTitle, content, setContent, publish, deleteDocument } = useDocument(id)
+	useDocumentTitle(title || 'Markdown Scratchpad')
 
-	const handleCopyToClipboard = (wasHeld: boolean) => {
-		const url = wasHeld ? `${window.location.origin}/r/${id}` : window.location.href
-		navigator.clipboard.writeText(url)
-		toast.info(`Copied ${url}`, {
-			icon: (
-				<div className='p-2 rounded-full aspect-square bg-base-content text-base-100'>
-					<LuClipboard />
-				</div>
-			),
-		})
-	}
+	const editorTheme = getEditorTheme(resolvedTheme)
 
-	const CodeView = (
-		<Editor
-			key='code'
-			value={content}
-			onChange={(val) => setContent(val ?? '')}
-			defaultLanguage='markdown'
-			theme={themes.find((x) => x.name === resolvedTheme)?.mode === 'light' ? 'light' : 'vs-dark'}
-			options={{ minimap: { enabled: false } }}
-		/>
-	)
-
-	const TipTapView = (
-		<Editor
-			key='tiptap'
-			value={content}
-			onChange={(val) => setContent(val ?? '')}
-			defaultLanguage='markdown'
-			theme={themes.find((x) => x.name === resolvedTheme)?.mode === 'light' ? 'light' : 'vs-dark'}
-			options={{ minimap: { enabled: false } }}
-		/>
-	)
-
-	const ReadonlyView = (
-		<div key='readonly' tabIndex={-1} className='prose prose-sm max-w-none p-4 relative size-full overflow-auto'>
-			<ReactMarkdown remarkPlugins={[remarkGfm]}>{content}</ReactMarkdown>
-		</div>
-	)
-
-	const viewDict: Record<SingleViewOption, { render: React.ReactNode; icon: React.ReactNode }> = {
-		code: { icon: <LuCode />, render: CodeView },
-		readonly: { icon: <LuLetterText />, render: ReadonlyView },
-		tiptap: { icon: <LuNotebookPen />, render: TipTapView },
-	}
+	const activeViews = view.split('|') as SingleViewOption[]
+	const isSplit = activeViews.length > 1
+	const showCode = activeViews.includes('code')
+	const showReadonly = activeViews.includes('readonly')
+	const orderStyle = (v: SingleViewOption) => (isSplit ? { order: activeViews.indexOf(v) } : undefined)
 
 	return (
 		<>
@@ -99,18 +63,21 @@ export const ScratchPad = ({ id, readonly = false }: ScratchPadProps) => {
 				) : (
 					<>
 						<div className='flex items-center gap-2 grow'>
-							<label tabIndex={0} htmlFor='sidebar' className='btn btn-ghost btn-square'>
+							<button
+								type='button'
+								aria-label='Open sidebar'
+								className='btn btn-ghost btn-square'
+								onClick={toggleSidebar}
+							>
 								<LuMenu />
-							</label>
+							</button>
 							<Link href='/'>
-								<SwapCycle duration={[5000, 750]} className='swap-flip btn btn-ghost btn-square'>
-									<LuHouse />
-									<LuSticker />
-								</SwapCycle>
+								<SwapCycle duration={SWAP_DURATION} className='swap-flip btn btn-ghost btn-square' items={SWAP_ITEMS} />
 							</Link>
 							<input
 								value={title}
 								readOnly={readonly}
+								placeholder='Add a title...'
 								onChange={(e) => setTitle(e.target.value)}
 								className='input input-ghost grow min-w-xs text-lg font-bold'
 							/>
@@ -133,100 +100,73 @@ export const ScratchPad = ({ id, readonly = false }: ScratchPadProps) => {
 							</ConfirmButton>
 						)}
 						{id && (
-							<ConfirmButton
-								className='btn btn-square hover:btn-error'
-								confirmClassName='btn hover:btn-error'
-								confirmChildren={
-									<>
-										<LuTrash2 />
-										<span>Delete?</span>
-									</>
-								}
-								onConfirm={deleteDocument}
-							>
-								<LuTrash2 />
-							</ConfirmButton>
+							<>
+								<ConfirmButton
+									className='btn btn-square hover:btn-error'
+									confirmClassName='btn hover:btn-error'
+									confirmChildren={
+										<>
+											<LuTrash2 />
+											<span>Delete?</span>
+										</>
+									}
+									onConfirm={deleteDocument}
+								>
+									<LuTrash2 />
+								</ConfirmButton>
+								<HoldableButton
+									className='btn btn-square hover:btn-primary'
+									onHold={() => copyToClipboard(id, true)}
+									onClick={() => copyToClipboard(id, false)}
+								>
+									<LuClipboard />
+								</HoldableButton>
+							</>
 						)}
-						{id && (
-							<HoldableButton
-								className='btn btn-square hover:btn-primary'
-								onHold={() => handleCopyToClipboard(true)}
-								onClick={() => handleCopyToClipboard(false)}
-							>
-								<LuClipboard />
-							</HoldableButton>
-						)}
-						<button
-							title='Change view'
-							onClick={() => showModal(VIEW_DIALOG_ID)}
-							className={cn('btn btn-square hover:btn-primary')}
-						>
-							<LuColumns2 />
-						</button>
+						<ViewDialog view={view} setView={setView} />
 					</>
 				)}
 			</header>
 
 			<main
 				className={cn('grid relative overflow-auto', {
-					'grid-rows-2 grid-cols-1 lg:grid-cols-2 lg:grid-rows-1': view.includes('|'),
+					'grid-rows-2 grid-cols-1 lg:grid-cols-2 lg:grid-rows-1': isSplit,
 				})}
 			>
-				{view.split('|').map((x) => viewDict[x as SingleViewOption].render)}
-
-				{!readonly && (
-					<div className='absolute text-xs right-2 top-2 h-fit lg:top-auto lg:bottom-2 backdrop-blur p-2 rounded-field text-current/50'>
-						{content.length ?? 0} / 10,000
+				{isLoading ? (
+					<div className='grid place-items-center'>
+						<span className='loading loading-spinner loading-lg' />
 					</div>
+				) : (
+					<>
+						{showCode && (
+							<div style={orderStyle('code')}>
+								<Editor
+									value={content}
+									onChange={(val) => setContent(val ?? '')}
+									defaultLanguage='markdown'
+									theme={editorTheme}
+									options={{ minimap: { enabled: false } }}
+								/>
+							</div>
+						)}
+						{showReadonly && (
+							<div
+								tabIndex={-1}
+								className='prose prose-sm max-w-none p-4 relative size-full overflow-auto'
+								style={orderStyle('readonly')}
+							>
+								<ReactMarkdown remarkPlugins={[remarkGfm]}>{content}</ReactMarkdown>
+							</div>
+						)}
+
+						{!readonly && (
+							<div className='absolute text-xs right-2 top-2 h-fit lg:top-auto lg:bottom-2 backdrop-blur p-2 rounded-field text-current/50'>
+								{content.length.toLocaleString()}
+							</div>
+						)}
+					</>
 				)}
-
-				<dialog id={VIEW_DIALOG_ID} className='modal'>
-					<div className='modal-box [&_svg]:shrink-0 grid gap-y-4 place-items-center'>
-						<form method='dialog' className='absolute right-1 top-1'>
-							<button className='btn btn-ghost btn-square'>
-								<LuX />
-							</button>
-						</form>
-						<div className='grid gap-4'>
-							<h2 className='text-lg text-center'>Single View</h2>
-							<div className='flex gap-2 justify-between'>
-								{viewOptions.map((viewOption) => (
-									<button
-										key={viewOption}
-										title={viewOption}
-										className={cn('btn btn-xl btn-square', {
-											'btn-primary': view === viewOption,
-										})}
-										onClick={() => setView(viewOption)}
-									>
-										{viewDict[viewOption].icon}
-									</button>
-								))}
-							</div>
-							<div className='divider'>OR</div>
-							<h2 className='text-lg text-center'>Split View</h2>
-							<div className='grid gap-2 grid-cols-2'>
-								{multiViewOptions.map((viewOption) => {
-									const [leftView, rightView] = viewOption.split('|') as [SingleViewOption, SingleViewOption]
-									return (
-										<button
-											key={viewOption}
-											title={viewOption}
-											className={cn('btn btn-xl flex items-center px-0 w-[calc(var(--size)*2)]', {
-												'btn-primary': view === viewOption,
-											})}
-											onClick={() => setView(viewOption)}
-										>
-											{viewDict[leftView].icon}
-											<div className='divider divider-horizontal m-1' />
-											{viewDict[rightView].icon}
-										</button>
-									)
-								})}
-							</div>
-						</div>
-					</div>
-				</dialog>
 			</main>
 		</>
 	)

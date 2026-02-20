@@ -1,51 +1,42 @@
 'use client'
 
-import { cn } from '@/utils'
-import React, { ComponentProps, useEffect, useRef, useState } from 'react'
+import { cn, useCycle } from '@trenaryja/ui'
+import type { ComponentProps, ReactNode } from 'react'
+import { useEffect, useRef, useState } from 'react'
 
 export type SwapCycleProps = ComponentProps<'div'> & {
-	duration?: number | number[]
-	animationDuration?: number
+	items: readonly ReactNode[]
+	duration?: number | readonly number[]
 }
 
-export const SwapCycle = ({ children, className, duration = 2000, animationDuration = 200 }: SwapCycleProps) => {
-	const childArray = React.Children.toArray(children)
-	const [showOn, setShowOn] = useState(false)
-	const [offIndex, setOffIndex] = useState(0)
-	const [onIndex, setOnIndex] = useState(childArray.length > 1 ? 1 : 0)
-	const [durationIndex, setDurationIndex] = useState(0)
+export const SwapCycle = ({ items, className, duration = 2000, ...props }: SwapCycleProps) => {
+	const { index, value, next, increment } = useCycle(items)
+	const [flipped, setFlipped] = useState(false)
 	const checkboxRef = useRef<HTMLInputElement>(null)
-	const timeoutRef = useRef<NodeJS.Timeout | null>(null)
+
+	const incrementRef = useRef(increment)
+	useEffect(() => {
+		incrementRef.current = increment
+	})
 
 	useEffect(() => {
-		if (timeoutRef.current) clearTimeout(timeoutRef.current)
-
-		timeoutRef.current = setTimeout(
-			() => {
-				setShowOn((prev) => !prev)
-				setTimeout(() => {
-					const fn = showOn ? setOnIndex : setOffIndex
-					fn((prev) => (prev + 2) % childArray.length)
-					setDurationIndex((prev) => prev + 1)
-				}, animationDuration)
-			},
-			Array.isArray(duration) ? duration[durationIndex % duration.length] : duration,
-		)
-
-		return () => {
-			if (timeoutRef.current) clearTimeout(timeoutRef.current)
-		}
-	}, [showOn, durationIndex, animationDuration, childArray.length, duration])
+		const d = Array.isArray(duration) ? duration[index % duration.length] : duration
+		const timer = setTimeout(() => {
+			incrementRef.current()
+			setFlipped((f) => !f)
+		}, d)
+		return () => clearTimeout(timer)
+	}, [index, duration])
 
 	useEffect(() => {
-		if (checkboxRef.current) checkboxRef.current.checked = showOn
-	}, [showOn])
+		if (checkboxRef.current) checkboxRef.current.checked = flipped
+	}, [flipped])
 
 	return (
-		<div className={cn('swap', className)}>
+		<div className={cn('swap', className)} {...props}>
 			<input type='checkbox' ref={checkboxRef} />
-			<div className='swap-on'>{childArray[onIndex]}</div>
-			<div className='swap-off'>{childArray[offIndex]}</div>
+			<div className='swap-on'>{flipped ? value : next}</div>
+			<div className='swap-off'>{flipped ? next : value}</div>
 		</div>
 	)
 }

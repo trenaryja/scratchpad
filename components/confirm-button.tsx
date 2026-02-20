@@ -1,9 +1,10 @@
-import * as React from 'react'
-import { cn } from '../utils'
+import { cn } from '@trenaryja/ui'
+import type { ComponentProps, ReactNode } from 'react'
+import { useEffect, useRef, useState } from 'react'
 
-export type ConfirmButtonProps = Omit<React.ComponentProps<'button'>, 'onClick'> & {
+export type ConfirmButtonProps = Omit<ComponentProps<'button'>, 'onClick'> & {
 	onConfirm: () => void
-	confirmChildren?: React.ReactNode
+	confirmChildren?: ReactNode
 	confirmClassName?: string
 	timeout?: number
 }
@@ -17,21 +18,34 @@ export const ConfirmButton = ({
 	timeout = 3000,
 	...props
 }: ConfirmButtonProps) => {
-	const [isAwaitingConfirmation, setIsAwaitingConfirmation] = React.useState(false)
+	const [isAwaitingConfirmation, setIsAwaitingConfirmation] = useState(false)
+	const timeoutRef = useRef<ReturnType<typeof setTimeout>>(null)
+
+	useEffect(
+		() => () => {
+			if (timeoutRef.current) clearTimeout(timeoutRef.current)
+		},
+		[],
+	)
 
 	const handleClick = () => {
 		if (!isAwaitingConfirmation) {
 			setIsAwaitingConfirmation(true)
-			setTimeout(() => setIsAwaitingConfirmation(false), timeout)
-			return
+			timeoutRef.current = setTimeout(() => setIsAwaitingConfirmation(false), timeout)
 		} else {
+			if (timeoutRef.current) clearTimeout(timeoutRef.current)
 			onConfirm()
 			setIsAwaitingConfirmation(false)
 		}
 	}
 
 	return (
-		<button className={cn(isAwaitingConfirmation ? confirmClassName : className)} onClick={handleClick} {...props}>
+		<button
+			type='button'
+			className={cn(isAwaitingConfirmation ? confirmClassName : className)}
+			onClick={handleClick}
+			{...props}
+		>
 			{isAwaitingConfirmation ? confirmChildren : children}
 		</button>
 	)

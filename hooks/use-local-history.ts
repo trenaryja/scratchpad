@@ -1,13 +1,15 @@
 'use client'
 
-import { useLocalStorage } from './use-local-storage'
+import { useLocalStorage } from '@mantine/hooks'
 
 type Id = string
+
 type HistoryEntry = { title: string; lastOpened: number }
+
 type History = Record<Id, HistoryEntry>
 
 export const useLocalHistory = () => {
-	const [history, setHistory] = useLocalStorage<History>('history', {})
+	const [history, setHistory] = useLocalStorage<History>({ key: 'history', defaultValue: {} })
 
 	const upsert = (id: Id, title: HistoryEntry['title']) =>
 		setHistory((prev) => ({ ...prev, [id]: { title, lastOpened: Date.now() } }))

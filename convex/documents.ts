@@ -54,6 +54,7 @@ export const updateSnapshot = mutation({
 		const ydoc = new Y.Doc()
 		if (doc.snapshotBase64) Y.applyUpdate(ydoc, base64ToUint8Array(doc.snapshotBase64))
 		Y.applyUpdate(ydoc, base64ToUint8Array(updateBase64))
+
 		const merged = Y.encodeStateAsUpdate(ydoc)
 
 		await ctx.db.patch(doc._id, {
@@ -73,4 +74,3 @@ export const deleteDocument = mutation({
 		await ctx.db.delete(doc._id)
 	},
 })
-
