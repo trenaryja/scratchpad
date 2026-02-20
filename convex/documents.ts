@@ -1,7 +1,7 @@
 import { v } from 'convex/values'
 import * as Y from 'yjs'
 import { mutation, query } from './_generated/server'
-import { base64ToUint8Array, uint8ArrayToBase64 } from './utils'
+import { base64ToUint8Array, HARD_LIMIT, TITLE_LIMIT, uint8ArrayToBase64 } from './utils'
 
 export const getDocument = query({
 	args: { id: v.string() },
@@ -20,6 +20,9 @@ export const createDocument = mutation({
 		content: v.optional(v.string()),
 	},
 	handler: async (ctx, { id, title, content }) => {
+		if (title && title.length > TITLE_LIMIT) throw new Error(`Title too long (max ${TITLE_LIMIT} characters)`)
+		if (content && content.length > HARD_LIMIT) throw new Error(`Content too long (max ${HARD_LIMIT} characters)`)
+
 		const existing = await ctx.db
 			.query('documents')
 			.withIndex('by_nanoid', (q) => q.eq('id', id))
@@ -44,6 +47,8 @@ export const updateSnapshot = mutation({
 		updateBase64: v.string(),
 	},
 	handler: async (ctx, { id, updateBase64 }) => {
+		if (updateBase64.length > 200_000) throw new Error('Update too large')
+
 		const doc = await ctx.db
 			.query('documents')
 			.withIndex('by_nanoid', (q) => q.eq('id', id))
@@ -54,6 +59,11 @@ export const updateSnapshot = mutation({
 		const ydoc = new Y.Doc()
 		if (doc.snapshotBase64) Y.applyUpdate(ydoc, base64ToUint8Array(doc.snapshotBase64))
 		Y.applyUpdate(ydoc, base64ToUint8Array(updateBase64))
+
+		const contentText = ydoc.getText('content').toString()
+		if (contentText.length > HARD_LIMIT) throw new Error(`Content too long (max ${HARD_LIMIT} characters)`)
+		const titleText = ydoc.getText('title').toString()
+		if (titleText.length > TITLE_LIMIT) throw new Error(`Title too long (max ${TITLE_LIMIT} characters)`)
 
 		const merged = Y.encodeStateAsUpdate(ydoc)
 

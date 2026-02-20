@@ -1,5 +1,6 @@
 'use client'
 
+import { SOFT_LIMIT, TITLE_LIMIT } from '@/convex/utils'
 import { useDocument } from '@/hooks/use-document'
 import { useDocumentTitle, useLocalStorage } from '@mantine/hooks'
 import { Editor } from '@monaco-editor/react'
@@ -22,6 +23,16 @@ export type ScratchPadProps = {
 
 const SWAP_DURATION = [5000, 750] as const
 const SWAP_ITEMS = [<LuHouse key='house' />, <LuSticker key='sticker' />]
+
+const getPublishTitle = (p: { title: string; content: string; softLimit: number; titleLimit: number }) => {
+	if (!p.title.trim()) return 'Add a title to publish'
+	if (!p.content.trim()) return 'Add content to publish'
+	if (p.title.length > p.titleLimit) return `Title exceeds ${p.titleLimit.toLocaleString()} character limit`
+	if (p.content.length > p.softLimit) return `Content exceeds ${p.softLimit.toLocaleString()} character limit`
+	return 'Publish'
+}
+
+const isTitleInvalid = (title: string) => !title.trim() || title.length > TITLE_LIMIT
 
 const getEditorTheme = (theme: string | undefined) =>
 	isDaisyThemeName(theme) && daisyThemeMap[theme].colorScheme === 'light' ? 'light' : 'vs-dark'
@@ -55,6 +66,8 @@ export const ScratchPad = ({ id, readonly = false }: ScratchPadProps) => {
 	const showReadonly = activeViews.includes('readonly')
 	const orderStyle = (v: SingleViewOption) => (isSplit ? { order: activeViews.indexOf(v) } : undefined)
 
+	const publishTitle = getPublishTitle({ title, content, softLimit: SOFT_LIMIT, titleLimit: TITLE_LIMIT })
+
 	return (
 		<>
 			<header className='flex flex-wrap justify-center items-center p-2 bg-base-200 gap-2'>
@@ -79,12 +92,15 @@ export const ScratchPad = ({ id, readonly = false }: ScratchPadProps) => {
 								readOnly={readonly}
 								placeholder='Add a title...'
 								onChange={(e) => setTitle(e.target.value)}
-								className='input input-ghost grow min-w-xs text-lg font-bold'
+								className={cn(
+									'input grow min-w-xs text-lg font-bold',
+									isTitleInvalid(title) ? 'input-error' : 'input-ghost',
+								)}
 							/>
 						</div>
 						{!id && (
 							<ConfirmButton
-								title='Publish'
+								title={publishTitle}
 								className='btn btn-square hover:btn-primary'
 								confirmClassName='btn hover:btn-primary'
 								confirmChildren={
@@ -94,7 +110,7 @@ export const ScratchPad = ({ id, readonly = false }: ScratchPadProps) => {
 									</>
 								}
 								onConfirm={publish}
-								disabled={!content.trim() || !title.trim()}
+								disabled={publishTitle !== 'Publish'}
 							>
 								<LuCloudUpload />
 							</ConfirmButton>
@@ -161,8 +177,17 @@ export const ScratchPad = ({ id, readonly = false }: ScratchPadProps) => {
 						)}
 
 						{!readonly && (
-							<div className='absolute text-xs right-2 top-2 h-fit lg:top-auto lg:bottom-2 backdrop-blur p-2 rounded-field text-current/50'>
-								{content.length.toLocaleString()}
+							<div
+								className={cn(
+									'absolute text-xs right-2 top-2 h-fit lg:top-auto lg:bottom-2 backdrop-blur p-2 rounded-field',
+									content.length > SOFT_LIMIT
+										? 'text-error'
+										: content.length > SOFT_LIMIT * 0.9
+											? 'text-warning'
+											: 'text-current/50',
+								)}
+							>
+								{content.length.toLocaleString()} / {SOFT_LIMIT.toLocaleString()}
 							</div>
 						)}
 					</>

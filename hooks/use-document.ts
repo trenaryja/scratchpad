@@ -1,7 +1,7 @@
 'use client'
 
 import { api } from '@/convex/_generated/api'
-import { base64ToUint8Array, uint8ArrayToBase64 } from '@/convex/utils'
+import { base64ToUint8Array, HARD_LIMIT, SOFT_LIMIT, TITLE_LIMIT, uint8ArrayToBase64 } from '@/convex/utils'
 import { useDebouncedCallback, useLocalStorage } from '@mantine/hooks'
 import { toast } from '@trenaryja/ui'
 import { useMutation, useQuery } from 'convex/react'
@@ -119,6 +119,10 @@ export const useDocument = (id?: string) => {
 
 	const setContent = useCallback(
 		(newVal: string) => {
+			if (newVal.length > HARD_LIMIT)
+				return toast.warning(`Content limit reached (${HARD_LIMIT.toLocaleString()} characters)`, {
+					id: 'content-hard-limit',
+				})
 			if (isLocal) return setLocalContent(newVal)
 			setRemoteContent(newVal)
 			ydoc.transact(() => {
@@ -129,6 +133,14 @@ export const useDocument = (id?: string) => {
 		[isLocal, setLocalContent, yContent, ydoc, setRemoteContent],
 	)
 
+	const wasOverSoftLimitRef = useRef(false)
+	useEffect(() => {
+		const over = content.length > SOFT_LIMIT
+		if (over && !wasOverSoftLimitRef.current)
+			toast.warning(`Content exceeds ${SOFT_LIMIT.toLocaleString()} character limit`)
+		wasOverSoftLimitRef.current = over
+	}, [content])
+
 	const { upsert, remove } = useLocalHistory()
 	const debouncedUpsert = useDebouncedCallback(upsert, 500)
 	useEffect(() => {
@@ -137,6 +149,10 @@ export const useDocument = (id?: string) => {
 
 	const publish = async () => {
 		if (!isLocal) return
+		if (content.length > SOFT_LIMIT)
+			return toast.warning(`Content is too long to publish (max ${SOFT_LIMIT.toLocaleString()} characters)`)
+		if (title.length > TITLE_LIMIT)
+			return toast.warning(`Title is too long to publish (max ${TITLE_LIMIT.toLocaleString()} characters)`)
 
 		const newId = nanoid(8)
 

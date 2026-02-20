@@ -1,3 +1,7 @@
+export const SOFT_LIMIT = 10_000
+export const HARD_LIMIT = 50_000
+export const TITLE_LIMIT = 200
+
 // Encode Uint8Array → base64
 export const uint8ArrayToBase64 = (bytes: Uint8Array) => {
 	// Convert to binary string

@@ -42,7 +42,10 @@ export const ConfirmButton = ({
 	return (
 		<button
 			type='button'
-			className={cn(isAwaitingConfirmation ? confirmClassName : className)}
+			className={cn(
+				isAwaitingConfirmation ? confirmClassName : className,
+				props.disabled && 'pointer-events-auto cursor-not-allowed',
+			)}
 			onClick={handleClick}
 			{...props}
 		>
