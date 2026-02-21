@@ -11,6 +11,9 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import * as Y from 'yjs'
 import { useLocalHistory } from './use-local-history'
 
+const toErrorMessage = (e: unknown, fallback: string) =>
+	e instanceof Error && e.message && !e.message.includes('Server Error') ? e.message : fallback
+
 const REMOTE_ORIGIN = 'remote'
 const SYNC_DEBOUNCE_MS = 500
 
@@ -36,10 +39,10 @@ const useYjsSync = ({ id, isLocal, docData, updateSnapshotMutation }: YjsSyncOpt
 		if (!pendingRef.current || isLocal || !id) return
 		pendingRef.current = false
 		const update = Y.encodeStateAsUpdate(ydoc)
-		updateSnapshotMutation({ id, updateBase64: uint8ArrayToBase64(update) }).catch(() => {
+		updateSnapshotMutation({ id, updateBase64: uint8ArrayToBase64(update) }).catch((e) => {
 			if (syncErrorRef.current) return
 			syncErrorRef.current = true
-			toast.error('Failed to sync changes to server')
+			toast.error(toErrorMessage(e, 'Failed to sync changes to server'))
 		})
 	}, SYNC_DEBOUNCE_MS)
 
@@ -92,7 +95,8 @@ export const useDocument = (id?: string) => {
 	const createDocMutation = useMutation(api.documents.createDocument)
 
 	useEffect(() => {
-		if (!isLocal && docData === null) createDocMutation({ id }).catch(() => toast.error('Failed to create document'))
+		if (!isLocal && docData === null)
+			createDocMutation({ id }).catch((e) => toast.error(toErrorMessage(e, 'Failed to create document')))
 	}, [id, docData, createDocMutation, isLocal])
 
 	const { ydoc, yTitle, yContent, remoteTitle, setRemoteTitle, remoteContent, setRemoteContent } = useYjsSync({
@@ -160,8 +164,8 @@ export const useDocument = (id?: string) => {
 			await createDocMutation({ id: newId, title, content })
 			upsert(newId, title)
 			router.push(`/${newId}`)
-		} catch {
-			toast.error('Failed to publish document')
+		} catch (e) {
+			toast.error(toErrorMessage(e, 'Failed to publish document'))
 		}
 	}
 
@@ -175,8 +179,8 @@ export const useDocument = (id?: string) => {
 				await deleteDocMutation({ id })
 				remove(id)
 				router.push('/')
-			} catch {
-				toast.error('Failed to delete document')
+			} catch (e) {
+				toast.error(toErrorMessage(e, 'Failed to delete document'))
 			}
 		}
 	}
